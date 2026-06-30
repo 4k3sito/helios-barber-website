@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { barbers } from "@/lib/barbers"
 import { createCalendarEvent } from "@/lib/google-calendar"
+import { LEAD_TIME_HOURS } from "@/lib/config"
 
 export async function POST(req: Request) {
   try {
@@ -14,6 +15,21 @@ export async function POST(req: Request) {
     const barber = barbers.find((b) => b.id === barberId)
     if (!barber) {
       return NextResponse.json({ error: "Barber not found" }, { status: 404 })
+    }
+
+    // Server-side lead-time check: reject bookings that start too soon
+    const [h, m] = time.split(":").map(Number)
+    const slotMinutes = h * 60 + m
+    const today = new Date().toISOString().slice(0, 10)
+    if (date === today) {
+      const nowLocal = new Date(new Date().toLocaleString("en-US", { timeZone: barber.timeZone }))
+      const nowMinutes = nowLocal.getHours() * 60 + nowLocal.getMinutes()
+      if (slotMinutes < nowMinutes + LEAD_TIME_HOURS * 60) {
+        return NextResponse.json(
+          { error: `Este horario ya no está disponible. Elige al menos ${LEAD_TIME_HOURS} horas después.` },
+          { status: 409 }
+        )
+      }
     }
 
     await createCalendarEvent(barber.calendarId, {

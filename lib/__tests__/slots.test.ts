@@ -24,7 +24,6 @@ describe("generateSlots", () => {
   })
 
   it("excludes a slot that exactly touches a busy period start", () => {
-    // busy 10:00-11:00 → slot 10:00-10:30 overlaps (starts at same time)
     const busy: BusySlot[] = [
       { start: "2026-06-25T10:00:00", end: "2026-06-25T11:00:00" },
     ]
@@ -67,5 +66,22 @@ describe("generateSlots", () => {
       "10:30", "11:00", "11:30", "12:00",
       "12:30", "13:00", "13:30", "14:00", "14:30",
     ])
+  })
+
+  describe("lead time", () => {
+    it("leadTimeHours=0 does not filter (backward compatible)", () => {
+      const slots = generateSlots([], { start: "09:00", end: "11:00" }, 30, date(), 0)
+      expect(slots).toEqual(["09:00", "09:30", "10:00", "10:30"])
+    })
+
+    it("does not filter future dates even with high lead time", () => {
+      // "2026-12-25" is in the future → no cutoff applied
+      const future = new Date("2026-12-25T12:00:00")
+      const slots = generateSlots([], { start: "09:00", end: "17:00" }, 60, future, 99)
+      expect(slots).toEqual([
+        "09:00", "10:00", "11:00", "12:00",
+        "13:00", "14:00", "15:00", "16:00",
+      ])
+    })
   })
 })

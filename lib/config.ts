@@ -1,52 +1,80 @@
-// Shared, non-secret config. Barber eventTypeIds come from your Cal.com dashboard
-// (one 45-min event type per barber). These IDs are safe to expose to the browser.
-
-export const TIMEZONE = "America/Monterrey"; // fixed UTC-6 year-round (Mexico dropped DST in 2022)
-
-export type Barber = {
+export interface Barber {
   id: string;
   name: string;
   role: string;
   photo: string;
-  eventTypeId: number; // Cal.com event type id for this barber's 45-min slot
-};
+  desc: string;
+  calendarId: string;
+  timeZone: string;
+  hours: { start: string; end: string };
+  slotDurationMin: number;
+}
 
 export const BARBERS: Barber[] = [
   {
-    id: "diego",
-    name: "Diego Salinas",
-    role: "Master Barber · Fades",
-    photo: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=800",
-    eventTypeId: Number("[INSERTE_AQUI_EVENT_TYPE_ID_DIEGO]") || 1,
+    id: "fabian",
+    name: "Fabián",
+    role: "Fade & Barba",
+    photo: "/uploads/Fabian.jpeg",
+    desc: "Experto en desvanecidos impecables y diseño de barba personalizado.",
+    calendarId: process.env.GCAL_FABIAN_ID || "primary",
+    timeZone: "America/Monterrey",
+    hours: { start: "09:00", end: "19:00" },
+    slotDurationMin: 30,
   },
   {
-    id: "marco",
-    name: "Marco Treviño",
-    role: "Senior Barber · Beard",
-    photo: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=800",
-    eventTypeId: Number("[INSERTE_AQUI_EVENT_TYPE_ID_MARCO]") || 2,
+    id: "alexis",
+    name: "Alexis",
+    role: "Tijera & Textura",
+    photo: "/uploads/Alexis.jpeg",
+    desc: "Especialista en cortes a tijera y técnicas de texturización de alta precisión.",
+    calendarId: process.env.GCAL_ALEXIS_ID || "primary",
+    timeZone: "America/Monterrey",
+    hours: { start: "10:00", end: "19:00" },
+    slotDurationMin: 30,
+  },
+  {
+    id: "less",
+    name: "Less",
+    role: "Rizos & Color",
+    photo: "/uploads/Less.jpeg",
+    desc: "Especialista en cortes a tijera, rizos y diseños de color.",
+    calendarId: process.env.GCAL_LESS_ID || "primary",
+    timeZone: "America/Monterrey",
+    hours: { start: "09:00", end: "17:00" },
+    slotDurationMin: 30,
   },
 ];
 
-export type Service = { name: string; desc: string; price: string; duration: string };
+export interface Service {
+  name: string;
+  duration: string;
+  price: string;
+}
 
-export const SERVICES: Service[] = [
-  { name: "Corte Clásico", desc: "Tijera y máquina, lavado y peinado.", price: "$280", duration: "45 min" },
-  { name: "Corte + Barba", desc: "Corte completo más perfilado de barba con toalla caliente.", price: "$420", duration: "45 min" },
-  { name: "Afeitado Tradicional", desc: "Navaja, espuma caliente y aftershave.", price: "$250", duration: "45 min" },
-  { name: "Arreglo de Barba", desc: "Perfilado, recorte y acondicionado.", price: "$200", duration: "45 min" },
+export const BARBERIA_SERVICES: Service[] = [
+  { name: "Corte de Pelo", duration: "55 min", price: "$400" },
+  { name: "Corte + Barba", duration: "1:20 hrs", price: "$600" },
+  { name: "Diseño y Perfilado de Barba", duration: "40 min", price: "$300" },
+  { name: "Diseño y Limpieza de Ceja", duration: "15 min", price: "$150" },
+  { name: "Corte + Ceja", duration: "1:05 hrs", price: "$500" },
+  { name: "Corte + Barba + Ceja", duration: "1:40 hrs", price: "$650" },
+];
+
+export const COLOR_SERVICES: Service[] = [
+  { name: "Tinte", duration: "1:30 hrs", price: "$600" },
+  { name: "Decoloración", duration: "1:15 hrs", price: "$600" },
+  { name: "Decoloración + Tinte", duration: "2:00 hrs", price: "$1,100" },
 ];
 
 export const CONTACT = {
-  address: "Av. Constitución 123, Centro, Monterrey, N.L.",
-  phone: "+52 81 0000 0000",
-  hours: [
-    { d: "Lun – Vie", h: "10:00 – 20:00" },
-    { d: "Sábado", h: "09:00 – 18:00" },
-    { d: "Domingo", h: "Cerrado" },
-  ],
-  instagram: "https://instagram.com/[INSERTE_AQUI_INSTAGRAM]",
-  whatsapp: "https://wa.me/[INSERTE_AQUI_WHATSAPP_E164]",
-  // Embed URL: Google Maps → Share → Embed a map → copy the src.
-  mapEmbedSrc: "https://www.google.com/maps?q=Monterrey,Mexico&output=embed",
+  whatsapp: "https://wa.me/525523333188",
+  whatsappDisplay: "+52 55 2333 3188",
+  instagram: "https://instagram.com/helios_barber",
+  instagramDisplay: "@helios_barber",
+  tiktok: "https://tiktok.com/@helios.barber.stu",
+  tiktokDisplay: "@helios.barber.stu",
 };
+
+// ponytail: slots closer than this to "now" are hidden (avoids rushed bookings)
+export const LEAD_TIME_HOURS = 2;

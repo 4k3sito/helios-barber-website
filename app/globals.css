@@ -2,13 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes kb {
+  from { transform: scale(1.12); }
+  to   { transform: scale(1); }
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
   background-color: theme("colors.ink");
-  color: theme("colors.cream");
   -webkit-font-smoothing: antialiased;
 }
 
@@ -17,13 +26,18 @@ body {
   color: theme("colors.ink");
 }
 
+@media (max-width: 860px) {
+  [data-nav-links] { display: none !important; }
+  [data-burger]    { display: flex !important; }
+  [data-res-btn]   { display: none !important; }
+  [data-grid]      { grid-template-columns: 1fr !important; }
+  [data-team]      { grid-template-columns: 1fr !important; }
+  [data-gal]       { grid-template-columns: 1fr 1fr !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

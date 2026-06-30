@@ -5,39 +5,38 @@ export interface Barber {
   photo: string
   calendarId: string
   timeZone: string
-  hours: { start: string; end: string } // "09:00", "18:00"
+  hours: { start: string; end: string }
   slotDurationMin: number
 }
 
 export const barbers: Barber[] = [
   {
-    id: "alex",
-    name: "Ake",
-    title: "Master Barber",
-    photo: "/barbers/alex.jpg",
-    // ponytail: testing with a shared Gmail calendar
-    calendarId: "alexitokunsito777@gmail.com",
-    timeZone: "America/Chicago",
+    id: "fabian",
+    name: "Fabián",
+    title: "Fade & Barba",
+    photo: "/uploads/Fabian.jpeg",
+    calendarId: process.env.GCAL_FABIAN_ID || "alexitokunsito777@gmail.com",
+    timeZone: "America/Monterrey",
     hours: { start: "09:00", end: "19:00" },
     slotDurationMin: 30,
   },
   {
-    id: "marco",
-    name: "Marco",
-    title: "Style Specialist",
-    photo: "/barbers/marco.jpg",
-    calendarId: process.env.GCAL_MARCO_ID || "primary",
-    timeZone: "America/Chicago",
+    id: "alexis",
+    name: "Alexis",
+    title: "Tijera & Textura",
+    photo: "/uploads/Alexis.jpeg",
+    calendarId: process.env.GCAL_ALEXIS_ID || "alexitokunsito777@gmail.com",
+    timeZone: "America/Monterrey",
     hours: { start: "10:00", end: "19:00" },
     slotDurationMin: 30,
   },
   {
-    id: "sarah",
-    name: "Sarah",
-    title: "Senior Stylist",
-    photo: "/barbers/sarah.jpg",
-    calendarId: process.env.GCAL_SARAH_ID || "primary",
-    timeZone: "America/Chicago",
+    id: "less",
+    name: "Less",
+    title: "Rizos & Color",
+    photo: "/uploads/Less.jpeg",
+    calendarId: process.env.GCAL_LESS_ID || "alexitokunsito777@gmail.com",
+    timeZone: "America/Monterrey",
     hours: { start: "09:00", end: "17:00" },
     slotDurationMin: 30,
   },

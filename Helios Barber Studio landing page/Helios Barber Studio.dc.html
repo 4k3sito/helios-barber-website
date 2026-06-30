@@ -17,8 +17,7 @@
   body{margin:0;background:#0d0c0b;color:#f2efe9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   ::selection{background:#b8895a;color:#0d0c0b}
   a{color:inherit;text-decoration:none}
-  @keyframes heroIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
-  @keyframes kb{from{transform:scale(1.14)}to{transform:scale(1)}}
+  @keyframes kb{from{transform:scale(1.12)}to{transform:scale(1)}}
   @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(9px)}}
   @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   @media(max-width:860px){
@@ -34,7 +33,7 @@
 <div style="--gold:#b8895a;position:relative;overflow-x:hidden;background:#0d0c0b">
 
   <!-- NAV -->
-  <nav data-nav style="position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:16px clamp(20px,5vw,72px);border-bottom:1px solid transparent;transition:background .4s ease,border-color .4s ease,backdrop-filter .4s ease">
+  <nav data-nav style="position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:16px clamp(20px,5vw,72px);border-bottom:1px solid transparent;transition:background .4s ease,border-color .4s ease">
     <a href="#top" style="display:flex;align-items:center;gap:12px">
       <img src="assets/sun-gold.png" alt="Helios" width="34" height="34" style="display:block;width:34px;height:34px">
       <span style="font-size:18px;font-weight:700;letter-spacing:.32em;padding-left:.32em">HELIOS</span>
@@ -79,9 +78,9 @@
       <img src="uploads/3.jpeg" alt="Interior Helios" style="width:100%;height:100%;object-fit:cover;object-position:center;animation:kb 9s cubic-bezier(.2,.6,.2,1) forwards"></div>
     <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(13,12,11,.62) 0%,rgba(13,12,11,.18) 32%,rgba(13,12,11,.42) 64%,rgba(13,12,11,.93) 100%)"></div>
     <div style="position:relative;z-index:2;padding:0 clamp(20px,5vw,72px) clamp(34px,5vw,64px);width:100%">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:22px;animation:heroIn 1s cubic-bezier(.16,.7,.3,1) both">Est. 2026 — Estudio de barbería &amp; peluquería</div>
-      <h1 style="margin:0;font-weight:800;font-size:clamp(82px,18vw,300px);line-height:.82;letter-spacing:-.045em;animation:heroIn 1.1s cubic-bezier(.16,.7,.3,1) .06s both">Helios</h1>
-      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:28px;margin-top:30px;animation:heroIn 1.1s cubic-bezier(.16,.7,.3,1) .16s both">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:22px">Est. 2026 — Estudio de barbería &amp; peluquería</div>
+      <h1 style="margin:0;font-weight:800;font-size:clamp(82px,18vw,300px);line-height:.82;letter-spacing:-.045em">Helios</h1>
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:28px;margin-top:30px">
         <p style="margin:0;max-width:30ch;font-size:clamp(17px,2vw,22px);line-height:1.45;color:#e7e1d7">Transformamos imagen en <span style="color:var(--gold)">presencia</span>. Precisión técnica y experiencia premium para el hombre que entiende la imagen como identidad.</p>
         <div style="display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#b3aca1;animation:floatY 2.6s ease-in-out infinite">
           <span>Desliza</span>
@@ -101,11 +100,11 @@
 
   <!-- ESTUDIO / MANIFESTO -->
   <section id="estudio" style="padding:clamp(72px,11vw,150px) clamp(20px,5vw,72px);max-width:1320px;margin:0 auto">
-    <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1),transform .9s cubic-bezier(.16,.7,.3,1);display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:40px">
+    <div style="display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:40px">
       <span>(01)</span><span style="width:42px;height:1px;background:var(--gold);opacity:.5"></span><span>El estudio</span>
     </div>
     <div style="display:grid;grid-template-columns:1.45fr 1fr;gap:clamp(34px,6vw,90px);align-items:center" data-grid>
-      <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1) .05s,transform .9s cubic-bezier(.16,.7,.3,1) .05s">
+      <div>
         <h2 style="margin:0;font-weight:700;font-size:clamp(28px,3.7vw,52px);line-height:1.12;letter-spacing:-.025em;text-wrap:balance">Una barbería para quienes entienden que la imagen es una extensión de su identidad.</h2>
         <p style="margin:30px 0 0;max-width:54ch;font-size:clamp(15px,1.3vw,18px);line-height:1.7;color:#aaa399">Cada servicio combina precisión técnica, atención personalizada y una experiencia premium diseñada hasta el último detalle. Nuestro compromiso no es únicamente lograr un gran resultado, sino hacer que cada cliente salga proyectando la mejor versión de sí mismo.</p>
         <div style="display:flex;gap:48px;margin-top:46px;flex-wrap:wrap">
@@ -114,7 +113,7 @@
           <div><div style="font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.03em">100%</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#76706a;margin-top:6px">Cita personalizada</div></div>
         </div>
       </div>
-      <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.16,.7,.3,1) .12s,transform 1s cubic-bezier(.16,.7,.3,1) .12s;position:relative">
+      <div style="position:relative">
         <img src="uploads/1.jpeg" alt="Interior del estudio" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;border-radius:2px">
         <img src="assets/sun-gold.png" alt="" width="64" height="64" style="position:absolute;bottom:-26px;left:-26px;width:64px;height:64px;background:#0d0c0b;padding:14px;border-radius:50%;border:1px solid rgba(184,137,90,.4)">
       </div>
@@ -124,7 +123,7 @@
   <!-- SERVICIOS -->
   <section id="servicios" style="background:#e4e1db;color:#14110f;--mute:#7a746c;--leader:#bdb7ad;--hair:rgba(20,17,15,.14);padding:clamp(72px,11vw,150px) clamp(20px,5vw,72px)">
     <div style="max-width:1320px;margin:0 auto">
-      <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1),transform .9s cubic-bezier(.16,.7,.3,1);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:22px;margin-bottom:clamp(40px,6vw,72px)">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:22px;margin-bottom:clamp(40px,6vw,72px)">
         <div>
           <div style="display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#a9763f;margin-bottom:20px"><span>(02)</span><span style="width:42px;height:1px;background:#a9763f;opacity:.6"></span><span>Carta de servicios</span></div>
           <h2 style="margin:0;font-weight:800;font-size:clamp(46px,8vw,128px);line-height:.9;letter-spacing:-.04em">Servicios</h2>
@@ -134,7 +133,7 @@
 
       <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:clamp(34px,6vw,84px);align-items:start" data-grid>
         <!-- column: barbería -->
-        <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1) .05s,transform .9s cubic-bezier(.16,.7,.3,1) .05s">
+        <div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);padding-bottom:18px;border-bottom:1px solid var(--hair);margin-bottom:8px">Barbería</div>
 
           <div style="display:flex;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--hair)">
@@ -176,7 +175,7 @@
         </div>
 
         <!-- column: color + cta -->
-        <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .95s cubic-bezier(.16,.7,.3,1) .12s,transform .95s cubic-bezier(.16,.7,.3,1) .12s">
+        <div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);padding-bottom:18px;border-bottom:1px solid var(--hair);margin-bottom:8px">Color</div>
           <div style="display:flex;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--hair)">
             <span style="font-size:clamp(17px,1.7vw,21px);font-weight:700;white-space:nowrap">Tinte</span>
@@ -210,7 +209,7 @@
 
   <!-- BARBEROS -->
   <section id="barberos" style="padding:clamp(72px,11vw,150px) clamp(20px,5vw,72px);max-width:1320px;margin:0 auto">
-    <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1),transform .9s cubic-bezier(.16,.7,.3,1);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:20px;margin-bottom:clamp(40px,6vw,68px)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:20px;margin-bottom:clamp(40px,6vw,68px)">
       <div>
         <div style="display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px"><span>(03)</span><span style="width:42px;height:1px;background:var(--gold);opacity:.5"></span><span>El equipo</span></div>
         <h2 style="margin:0;font-weight:800;font-size:clamp(46px,8vw,128px);line-height:.9;letter-spacing:-.04em">Barberos</h2>
@@ -220,7 +219,7 @@
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(18px,2.4vw,30px)" data-team>
       <!-- Fabián -->
-      <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1) .04s,transform .9s cubic-bezier(.16,.7,.3,1) .04s">
+      <div>
         <div style="position:relative;aspect-ratio:3/4;border-radius:2px;overflow:hidden">
           <img src="uploads/Fabian.jpeg" alt="Fabián" style="width:100%;height:100%;object-fit:cover;object-position:center 18%;display:block">
           <span style="position:absolute;top:14px;left:14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--gold);background:rgba(13,12,11,.55);backdrop-filter:blur(4px);padding:5px 9px;border-radius:2px">01</span>
@@ -233,7 +232,7 @@
       </div>
 
       <!-- Alexis -->
-      <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1) .12s,transform .9s cubic-bezier(.16,.7,.3,1) .12s">
+      <div>
         <div style="position:relative;aspect-ratio:3/4;border-radius:2px;overflow:hidden">
           <img src="uploads/Alexis.jpeg" alt="Alexis" style="width:100%;height:100%;object-fit:cover;object-position:center 16%;display:block">
           <span style="position:absolute;top:14px;left:14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--gold);background:rgba(13,12,11,.55);backdrop-filter:blur(4px);padding:5px 9px;border-radius:2px">02</span>
@@ -246,7 +245,7 @@
       </div>
 
       <!-- Less -->
-      <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1) .2s,transform .9s cubic-bezier(.16,.7,.3,1) .2s">
+      <div>
         <div style="position:relative;aspect-ratio:3/4;border-radius:2px;overflow:hidden">
           <img src="uploads/Less.jpeg" alt="Less" style="width:100%;height:100%;object-fit:cover;object-position:60% 22%;display:block">
           <span style="position:absolute;top:14px;left:14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--gold);background:rgba(13,12,11,.55);backdrop-filter:blur(4px);padding:5px 9px;border-radius:2px">03</span>
@@ -263,7 +262,7 @@
   <!-- GALERÍA -->
   <section id="galeria" style="padding:0 0 clamp(20px,4vw,40px)">
     <div style="padding:0 clamp(20px,5vw,72px);max-width:1320px;margin:0 auto clamp(34px,5vw,56px)">
-      <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1),transform .9s cubic-bezier(.16,.7,.3,1);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:18px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:18px">
         <div>
           <div style="display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px"><span>(04)</span><span style="width:42px;height:1px;background:var(--gold);opacity:.5"></span><span>El espacio</span></div>
           <h2 style="margin:0;font-weight:800;font-size:clamp(46px,8vw,128px);line-height:.9;letter-spacing:-.04em">Galería</h2>
@@ -283,7 +282,7 @@
   <!-- CONTACTO / FOOTER -->
   <footer id="contacto" style="padding:clamp(72px,11vw,150px) clamp(20px,5vw,72px) 0;background:#0b0a09;border-top:1px solid rgba(242,239,233,.08);margin-top:clamp(40px,6vw,80px)">
     <div style="max-width:1320px;margin:0 auto">
-      <div data-reveal style="opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.16,.7,.3,1),transform .9s cubic-bezier(.16,.7,.3,1);display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(34px,6vw,80px);align-items:end" data-grid>
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(34px,6vw,80px);align-items:end" data-grid>
         <div>
           <div style="display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:26px"><span>(05)</span><span style="width:42px;height:1px;background:var(--gold);opacity:.5"></span><span>Reserva tu cita</span></div>
           <h2 style="margin:0;font-weight:800;font-size:clamp(40px,6.5vw,104px);line-height:.92;letter-spacing:-.04em">Proyecta tu<br>mejor versión.</h2>
@@ -334,53 +333,6 @@ class Component extends DCLogic {
       rowHover: (e) => { e.currentTarget.style.paddingLeft = '12px'; e.currentTarget.style.transition = 'padding .3s ease'; },
       rowReset: (e) => { e.currentTarget.style.paddingLeft = '0'; },
     };
-  }
-  componentDidMount() {
-    const root = (this.el && this.el.querySelector) ? this.el : document;
-    const reveal = (n) => { n.style.opacity = '1'; n.style.transform = 'none'; };
-
-    // Nav background on scroll
-    const nav = root.querySelector('[data-nav]') || document.querySelector('[data-nav]');
-    const onScroll = () => {
-      if (!nav) return;
-      if (window.scrollY > 40) {
-        nav.style.background = 'rgba(11,10,9,0.86)';
-        nav.style.backdropFilter = 'blur(10px)';
-        nav.style.borderBottomColor = 'rgba(242,239,233,0.08)';
-      } else {
-        nav.style.background = 'transparent';
-        nav.style.backdropFilter = 'none';
-        nav.style.borderBottomColor = 'transparent';
-      }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    this._onScroll = onScroll;
-
-    // Scroll reveal — observe, with a hard safety fallback so nothing ever stays hidden
-    let io = null;
-    if (typeof IntersectionObserver !== 'undefined') {
-      io = new IntersectionObserver((entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) { reveal(en.target); io.unobserve(en.target); }
-        });
-      }, { threshold: 0, rootMargin: '0px 0px -6% 0px' });
-      this._io = io;
-    }
-    const nodes = () => document.querySelectorAll('[data-reveal]');
-    const scan = () => nodes().forEach((n) => { io ? io.observe(n) : reveal(n); });
-    scan();
-    this._t1 = setTimeout(scan, 300);
-    // Safety: anything still hidden after 1.4s (observer never fired) is forced visible.
-    this._t2 = setTimeout(() => {
-      nodes().forEach((n) => { if (getComputedStyle(n).opacity !== '1') reveal(n); });
-    }, 1400);
-  }
-  componentWillUnmount() {
-    if (this._onScroll) window.removeEventListener('scroll', this._onScroll);
-    if (this._io) this._io.disconnect();
-    if (this._t1) clearTimeout(this._t1);
-    if (this._t2) clearTimeout(this._t2);
   }
 }
 </script>

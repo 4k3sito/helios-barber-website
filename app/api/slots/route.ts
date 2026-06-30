@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { barbers } from "@/lib/barbers"
 import { getBusySlots, generateSlots } from "@/lib/google-calendar"
+import { LEAD_TIME_HOURS } from "@/lib/config"
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -23,7 +24,9 @@ export async function GET(req: Request) {
     busy,
     barber.hours,
     barber.slotDurationMin,
-    date
+    date,
+    LEAD_TIME_HOURS,
+    barber.timeZone
   )
 
   return NextResponse.json({ slots })

@@ -2,33 +2,40 @@ import Image from "next/image";
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-dvh items-end overflow-hidden">
-      {/* ponytail: swap this Unsplash placeholder for a full-bleed interior photo of the shop */}
-      <Image
-        src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2000"
-        alt="Interior de Helios Barber"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/20" />
-
-      <div className="relative mx-auto w-full max-w-content px-6 pb-20 sm:pb-28">
-        <p className="mb-4 text-sm uppercase tracking-[0.3em] text-bronze">Premium Grooming · Monterrey</p>
-        <h1 className="max-w-3xl font-display text-5xl font-bold leading-[1.05] sm:text-7xl">
-          El corte que mereces, sin esperas.
-        </h1>
-        <p className="mt-6 max-w-xl text-lg text-muted">
-          Barbería de autor. Agenda en línea, elige tu barbero y llega a tu hora.
-        </p>
-        <a
-          href="#agendar"
-          className="mt-10 inline-flex items-center gap-2 rounded-full bg-bronze px-8 py-4 font-medium text-ink transition-transform duration-200 hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bronze"
-        >
-          Agendar Cita
-        </a>
+    <header id="top" className="relative flex min-h-dvh flex-col justify-end overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/uploads/3.jpeg"
+          alt="Interior Helios"
+          fill
+          priority
+          sizes="100vw"
+          className="animate-[kb_9s_cubic-bezier(.2,.6,.2,1)_forwards] object-cover"
+        />
       </div>
-    </section>
+      <div className="absolute inset-0 z-1 bg-gradient-to-b from-ink/72 via-ink/30 via-60% to-ink/95" />
+      <div
+        className="relative z-2 w-full bg-gradient-to-b from-black/35 via-black/20 to-transparent px-[clamp(20px,5vw,72px)] pb-[clamp(34px,5vw,64px)] pt-[clamp(30px,4vw,48px)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_8%,black_92%,transparent_100%)] [mask-image:linear-gradient(to_right,transparent_0%,black_8%,black_92%,transparent_100%)]"
+      >
+        <div className="mb-6 font-mono text-xs uppercase tracking-[0.26em] text-bronze hero-kicker">
+          Est. 2026 — Estudio de barbería &amp; peluquería
+        </div>
+        <h1 className="m-0 font-display text-[clamp(82px,18vw,300px)] font-extrabold leading-[.82] tracking-[-0.045em] hero-title">
+          Helios
+        </h1>
+        <div className="mt-8 flex flex-wrap items-end justify-between gap-8">
+          <p className="m-0 max-w-[65ch] font-body text-[clamp(17px,2vw,22px)] leading-[1.55] text-secondary hero-sub">
+            Transformamos imagen en{" "}
+            <span className="text-bronze">presencia</span>. Precisión técnica y
+            experiencia premium para el hombre que entiende la imagen como
+            identidad.
+          </p>
+          <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.18em] text-tertiary animate-[fadeInOut_2s_ease-in-out_infinite] hero-scroll">
+            <span>Desliza</span>
+            <span className="block h-px w-[34px] bg-tertiary" />
+          </div>
+        </div>
+      </div>
+    </header>
   );
 }

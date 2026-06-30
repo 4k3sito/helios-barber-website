@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#0d0c0b;color:#f2efe9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  ::selection{background:#b8895a;color:#0d0c0b}
+  input{font-family:inherit}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#0d0c0b;display:flex;justify-content:center;padding:clamp(40px,7vw,96px) clamp(20px,5vw,72px)">
+  <div style="width:100%;max-width:760px">
+
+    <!-- kicker -->
+    <div style="display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#b8895a;margin-bottom:20px">
+      <span>(06)</span><span style="width:42px;height:1px;background:#b8895a;opacity:.5"></span><span>Reserva tu cita</span>
+    </div>
+    <h2 style="margin:0;font-weight:800;font-size:clamp(40px,7vw,76px);line-height:.92;letter-spacing:-.03em">Agenda tu cita</h2>
+
+    <!-- steps -->
+    <ol style="list-style:none;margin:28px 0 0;padding:0;display:flex;gap:14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+        <li style="display:flex;align-items:center;gap:8px;color:{{ s.color }}">
+          <span style="display:grid;place-items:center;width:24px;height:24px;border:1px solid {{ s.border }};border-radius:2px;color:{{ s.color }}">{{ s.n }}</span>
+          <span>{{ s.label }}</span>
+        </li>
+      </sc-for>
+    </ol>
+
+    <!-- card -->
+    <div style="margin-top:34px;border:1px solid #272320;background:#14110f;border-radius:3px;padding:clamp(22px,4vw,38px)">
+
+      <!-- STEP 1 barber -->
+      <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <button onClick="{{ pick0 }}" style="display:flex;align-items:center;gap:16px;text-align:left;background:none;border:1px solid #272320;border-radius:2px;padding:16px;cursor:pointer;transition:border-color .2s" onMouseOver="{{ hovB }}" onMouseOut="{{ outB }}">
+            <img src="uploads/Fabian.jpeg" alt="Fabián" style="width:72px;height:72px;border-radius:2px;object-fit:cover;object-position:center 18%;display:block">
+            <span style="min-width:0">
+              <span style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;color:#76706a;margin-bottom:5px">01</span>
+              <span style="display:block;font-size:18px;font-weight:700;letter-spacing:-.01em">Fabián</span>
+              <span style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#b8895a;margin-top:3px">Fade &amp; Barba</span>
+            </span>
+          </button>
+          <button onClick="{{ pick1 }}" style="display:flex;align-items:center;gap:16px;text-align:left;background:none;border:1px solid #272320;border-radius:2px;padding:16px;cursor:pointer;transition:border-color .2s" onMouseOver="{{ hovB }}" onMouseOut="{{ outB }}">
+            <img src="uploads/Alexis.jpeg" alt="Alexis" style="width:72px;height:72px;border-radius:2px;object-fit:cover;object-position:center 16%;display:block">
+            <span style="min-width:0">
+              <span style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;color:#76706a;margin-bottom:5px">02</span>
+              <span style="display:block;font-size:18px;font-weight:700;letter-spacing:-.01em">Alexis</span>
+              <span style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#b8895a;margin-top:3px">Tijera &amp; Textura</span>
+            </span>
+          </button>
+          <button onClick="{{ pick2 }}" style="display:flex;align-items:center;gap:16px;text-align:left;background:none;border:1px solid #272320;border-radius:2px;padding:16px;cursor:pointer;transition:border-color .2s" onMouseOver="{{ hovB }}" onMouseOut="{{ outB }}">
+            <img src="uploads/Less.jpeg" alt="Less" style="width:72px;height:72px;border-radius:2px;object-fit:cover;object-position:60% 22%;display:block">
+            <span style="min-width:0">
+              <span style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;color:#76706a;margin-bottom:5px">03</span>
+              <span style="display:block;font-size:18px;font-weight:700;letter-spacing:-.01em">Less</span>
+              <span style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#b8895a;margin-top:3px">Rizos &amp; Color</span>
+            </span>
+          </button>
+        </div>
+      </sc-if>
+
+      <!-- STEP 2 date -->
+      <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:360px">
+          <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#76706a;margin-bottom:8px">Elige el día</label>
+          <input type="date" value="{{ date }}" onChange="{{ setDate }}" style="width:100%;border:1px solid #272320;background:#0d0c0b;color:#f2efe9;padding:12px 16px;border-radius:2px;font-family:'JetBrains Mono',monospace;color-scheme:dark">
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <button onClick="{{ back }}" style="border:1px solid #272320;background:none;color:#f2efe9;padding:12px 24px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer">← Atrás</button>
+            <button onClick="{{ next }}" style="border:0;background:#f2efe9;color:#0d0c0b;padding:12px 24px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer">Continuar →</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- STEP 3 slots -->
+      <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <p style="margin:0 0 20px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#76706a">Horarios para <span style="color:#b8895a">{{ barberName }}</span> · {{ date }}</p>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <sc-for list="{{ slots }}" as="t" hint-placeholder-count="8">
+              <button onClick="{{ t.pick }}" style="border:1px solid #272320;background:none;color:#f2efe9;padding:13px 0;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:14px;cursor:pointer;transition:border-color .2s,color .2s" onMouseOver="{{ t.hov }}" onMouseOut="{{ t.out }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+          <div style="margin-top:24px">
+            <button onClick="{{ back }}" style="border:1px solid #272320;background:none;color:#f2efe9;padding:12px 24px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer">← Atrás</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- STEP 4 form -->
+      <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:360px">
+          <p style="margin:0 0 20px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#76706a">{{ barberName }} · {{ date }} · <span style="color:#b8895a">{{ slotLabel }}</span></p>
+          <label style="display:block;margin-bottom:16px"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#76706a;margin-bottom:6px">Nombre</span><input style="width:100%;border:1px solid #272320;background:#0d0c0b;color:#f2efe9;padding:12px 16px;border-radius:2px"></label>
+          <label style="display:block;margin-bottom:16px"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#76706a;margin-bottom:6px">Teléfono</span><input style="width:100%;border:1px solid #272320;background:#0d0c0b;color:#f2efe9;padding:12px 16px;border-radius:2px"></label>
+          <label style="display:block;margin-bottom:20px"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#76706a;margin-bottom:6px">Email (para tu confirmación)</span><input style="width:100%;border:1px solid #272320;background:#0d0c0b;color:#f2efe9;padding:12px 16px;border-radius:2px"></label>
+          <button onClick="{{ confirm }}" style="width:100%;border:0;background:#b8895a;color:#0d0c0b;padding:16px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer">Confirmar cita</button>
+          <button onClick="{{ back }}" style="width:100%;background:none;border:0;color:#76706a;padding:12px 0 0;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer">← Cambiar horario</button>
+        </div>
+      </sc-if>
+
+      <!-- SUCCESS -->
+      <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:24px 0">
+          <img src="assets/sun-gold.png" alt="" width="44" height="44" style="width:44px;height:44px;margin-bottom:18px">
+          <p style="margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em;color:#b8895a">¡Cita confirmada!</p>
+          <p style="margin:12px 0 0;color:#aaa399">Te esperamos {{ date }} a las {{ slotLabel }} con {{ barberName }}.</p>
+          <button onClick="{{ reset }}" style="margin-top:26px;border:1px solid #272320;background:none;color:#f2efe9;padding:12px 24px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer">Agendar otra</button>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#56514b">Vista previa · refleja BookingWidget.tsx adaptado</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;}}">
+class Component extends DCLogic {
+  state = { step: 1, date: '2026-07-03', barber: 0, slot: null };
+
+  pickBarber(i) { this.setState({ barber: i, step: 2 }); }
+  pickSlot(i) { this.setState({ slot: i, step: 4 }); }
+
+  renderVals() {
+    const s = this.state;
+    const BARBERS = [
+      { name: 'Fabián', role: 'Fade & Barba', photo: 'uploads/Fabian.jpeg', pos: 'center 18%' },
+      { name: 'Alexis', role: 'Tijera & Textura', photo: 'uploads/Alexis.jpeg', pos: 'center 16%' },
+      { name: 'Less', role: 'Rizos & Color', photo: 'uploads/Less.jpeg', pos: '60% 22%' },
+    ];
+    const TIMES = ['10:00','10:45','11:30','12:15','13:00','16:00','16:45','17:30'];
+    const stepLabels = ['Barbero','Fecha','Horario','Datos'];
+
+    const hovBorder = (c) => (e) => { e.currentTarget.style.borderColor = c; };
+    const outBorder = (e) => { e.currentTarget.style.borderColor = '#272320'; };
+
+    return {
+      steps: stepLabels.map((label, i) => {
+        const n = i + 1;
+        const active = n === s.step || (s.step === 5 && n === 4);
+        const done = n <= s.step;
+        return { n, label, color: active ? '#b8895a' : '#76706a', border: done ? '#b8895a' : '#272320' };
+      }),
+      isStep1: s.step === 1,
+      isStep2: s.step === 2,
+      isStep3: s.step === 3,
+      isStep4: s.step === 4,
+      isDone: s.step === 5,
+      date: s.date,
+      barberName: BARBERS[s.barber].name,
+      slotLabel: s.slot != null ? TIMES[s.slot] : '',
+      pick0: () => this.pickBarber(0),
+      pick1: () => this.pickBarber(1),
+      pick2: () => this.pickBarber(2),
+      hovB: hovBorder('#b8895a'),
+      outB: outBorder,
+      slots: TIMES.map((label, i) => ({
+        label,
+        pick: () => this.pickSlot(i),
+        hov: (e) => { e.currentTarget.style.borderColor = '#b8895a'; e.currentTarget.style.color = '#b8895a'; },
+        out: (e) => { e.currentTarget.style.borderColor = '#272320'; e.currentTarget.style.color = '#f2efe9'; },
+      })),
+      setDate: (e) => this.setState({ date: e.target.value }),
+      next: () => this.setState({ step: 3 }),
+      back: () => this.setState((st) => ({ step: Math.max(1, st.step - 1) })),
+      confirm: () => this.setState({ step: 5 }),
+      reset: () => this.setState({ step: 1, slot: null }),
+    };
+  }
+}
+</script>
+</body>
+</html>

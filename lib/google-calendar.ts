@@ -61,7 +61,9 @@ export function generateSlots(
   busy: BusySlot[],
   hours: { start: string; end: string },
   slotMin: number,
-  date: Date
+  date: Date,
+  leadTimeHours: number = 0,
+  timeZone?: string
 ): string[] {
   const slots: string[] = []
   const [openH, openM] = hours.start.split(":").map(Number)
@@ -69,7 +71,20 @@ export function generateSlots(
   const openMinutes = openH * 60 + openM
   const closeMinutes = closeH * 60 + closeM
 
+  // ponytail: compute "now" in the barber's timezone for lead-time cutoff
+  let cutoffMinutes = 0
+  const todayStr = toDateString(new Date())
+  if (leadTimeHours > 0 && toDateString(date) === todayStr) {
+    const nowLocal = timeZone
+      ? new Date(new Date().toLocaleString("en-US", { timeZone }))
+      : new Date()
+    cutoffMinutes = nowLocal.getHours() * 60 + nowLocal.getMinutes() + leadTimeHours * 60
+  }
+
   for (let m = openMinutes; m + slotMin <= closeMinutes; m += slotMin) {
+    // Skip slots that start before the cutoff (today only)
+    if (cutoffMinutes > 0 && m < cutoffMinutes) continue
+
     const h = Math.floor(m / 60)
     const min = m % 60
     const startIso = `${toDateString(date)}T${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}:00`

@@ -5,18 +5,35 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0A0A0B", // near-black background
-        surface: "#141416", // cards
-        line: "#26262A", // borders
-        cream: "#F4F1EA", // off-white foreground
-        muted: "#A1A1A6", // secondary text
-        bronze: "#C9A24B", // premium accent / CTA
+        ink: "#0D0C0B",
+        "ink-2": "#0B0A09",
+        surface: "#14110F",
+        "surface-hover": "#1C1916",
+        border: "#272320",
+        cream: "#F2EFE9",
+        body: "#E8E3DB",
+        secondary: "#B8AFA4",
+        tertiary: "#8A847D",
+        bronze: "#B8895A",
       },
       fontFamily: {
-        display: ["var(--font-display)", "system-ui", "sans-serif"],
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ['"Helvetica Neue"', "Helvetica", "Arial", "sans-serif"],
+        sans: ['"Helvetica Neue"', "Helvetica", "Arial", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
+        body: ["var(--font-body)", "Georgia", "serif"],
       },
-      maxWidth: { content: "1200px" },
+      fontSize: {
+        "2xs": ["10px", { lineHeight: "14px" }],
+        xs: ["12px", { lineHeight: "16px" }],
+        sm: ["14px", { lineHeight: "20px" }],
+        base: ["17px", { lineHeight: "1.6" }],
+        lg: ["20px", { lineHeight: "28px" }],
+        xl: ["28px", { lineHeight: "36px" }],
+        "2xl": ["48px", { lineHeight: "52px" }],
+        "3xl": ["72px", { lineHeight: "64px" }],
+      },
+      maxWidth: { content: "1320px" },
+      borderRadius: { card: "3px", ctl: "2px" },
     },
   },
   plugins: [],
