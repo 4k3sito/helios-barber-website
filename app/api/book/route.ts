@@ -1,20 +1,25 @@
 import { NextResponse } from "next/server"
 import { barbers } from "@/lib/barbers"
 import { createCalendarEvent } from "@/lib/google-calendar"
-import { LEAD_TIME_HOURS } from "@/lib/config"
+import { LEAD_TIME_HOURS, ALL_SERVICES } from "@/lib/config"
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { barberId, date, time, clientName, clientEmail, clientPhone } = body
+    const { barberId, serviceId, date, time, clientName, clientEmail, clientPhone } = body
 
-    if (!barberId || !date || !time || !clientName || !clientEmail) {
+    if (!barberId || !serviceId || !date || !time || !clientName || !clientEmail) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
     const barber = barbers.find((b) => b.id === barberId)
     if (!barber) {
       return NextResponse.json({ error: "Barber not found" }, { status: 404 })
+    }
+    // ponytail: duration comes from server config, never trust a client-sent value
+    const service = ALL_SERVICES.find((s) => s.id === serviceId)
+    if (!service) {
+      return NextResponse.json({ error: "Service not found" }, { status: 404 })
     }
 
     // Server-side lead-time check: reject bookings that start too soon
@@ -39,9 +44,10 @@ export async function POST(req: Request) {
       clientName,
       clientEmail,
       clientPhone: clientPhone || "",
-      slotDurationMin: barber.slotDurationMin,
+      slotDurationMin: service.durationMin,
       timeZone: barber.timeZone,
       barberName: barber.name,
+      serviceName: service.name,
     })
 
     return NextResponse.json({ success: true })

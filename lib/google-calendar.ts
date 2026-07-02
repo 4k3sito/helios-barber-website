@@ -63,7 +63,8 @@ export function generateSlots(
   slotMin: number,
   date: Date,
   leadTimeHours: number = 0,
-  timeZone?: string
+  timeZone?: string,
+  durationMin: number = slotMin
 ): string[] {
   const slots: string[] = []
   const [openH, openM] = hours.start.split(":").map(Number)
@@ -81,7 +82,9 @@ export function generateSlots(
     cutoffMinutes = nowLocal.getHours() * 60 + nowLocal.getMinutes() + leadTimeHours * 60
   }
 
-  for (let m = openMinutes; m + slotMin <= closeMinutes; m += slotMin) {
+  // ponytail: step by slotMin (grid granularity) but block using durationMin
+  // (the actual service length), so a long service can't overlap the next appointment
+  for (let m = openMinutes; m + durationMin <= closeMinutes; m += slotMin) {
     // Skip slots that start before the cutoff (today only)
     if (cutoffMinutes > 0 && m < cutoffMinutes) continue
 
@@ -90,7 +93,7 @@ export function generateSlots(
     const startIso = `${toDateString(date)}T${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}:00`
 
     const startMs = new Date(startIso).getTime()
-    const endMs = startMs + slotMin * 60_000
+    const endMs = startMs + durationMin * 60_000
 
     const overlaps = busy.some(
       (b) =>
@@ -117,6 +120,7 @@ export interface Booking {
   slotDurationMin: number
   timeZone: string
   barberName: string
+  serviceName: string
 }
 
 export async function createCalendarEvent(
@@ -136,8 +140,8 @@ export async function createCalendarEvent(
   await cal.events.insert({
     calendarId,
     requestBody: {
-      summary: `✂️ ${booking.clientName} - ${booking.barberName}`,
-      description: `Name: ${booking.clientName}\nEmail: ${booking.clientEmail}\nPhone: ${booking.clientPhone}`,
+      summary: `✂️ ${booking.clientName} - ${booking.barberName} (${booking.serviceName})`,
+      description: `Name: ${booking.clientName}\nEmail: ${booking.clientEmail}\nPhone: ${booking.clientPhone}\nService: ${booking.serviceName}`,
       start: { dateTime: startDateTime, timeZone: booking.timeZone },
       end: { dateTime: endDateTime, timeZone: booking.timeZone },
     },

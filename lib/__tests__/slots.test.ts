@@ -68,6 +68,32 @@ describe("generateSlots", () => {
     ])
   })
 
+  describe("service duration (durationMin)", () => {
+    it("blocks slots where a longer service would overlap a busy period", () => {
+      const busy: BusySlot[] = [
+        { start: "2026-06-25T10:30:00", end: "2026-06-25T11:00:00" },
+      ]
+      // 30-min grid, but each appointment takes 80min (e.g. Corte + Barba)
+      const slots = generateSlots(busy, { start: "09:00", end: "13:00" }, 30, date(), 0, undefined, 80)
+      // 09:30 would run 09:30-10:50, overlapping the 10:30-11:00 busy block -> blocked
+      expect(slots).not.toContain("09:30")
+      // 09:00 runs 09:00-10:20, clear of the busy block -> available
+      expect(slots).toContain("09:00")
+      // 11:00 runs 11:00-12:20, clear -> available
+      expect(slots).toContain("11:00")
+    })
+
+    it("excludes a start time whose service duration would run past closing", () => {
+      const slots = generateSlots([], { start: "09:00", end: "10:00" }, 30, date(), 0, undefined, 45)
+      expect(slots).toEqual(["09:00"])
+    })
+
+    it("defaults durationMin to slotMin when omitted (backward compatible)", () => {
+      const slots = generateSlots([], { start: "09:00", end: "10:00" }, 30, date())
+      expect(slots).toEqual(["09:00", "09:30"])
+    })
+  })
+
   describe("lead time", () => {
     it("leadTimeHours=0 does not filter (backward compatible)", () => {
       const slots = generateSlots([], { start: "09:00", end: "11:00" }, 30, date(), 0)

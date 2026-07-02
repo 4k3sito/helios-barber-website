@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { BARBERS, type Barber } from "@/lib/config";
+import { BARBERS, BARBERIA_SERVICES, COLOR_SERVICES, type Barber, type Service } from "@/lib/config";
 
 const today = () => new Date().toISOString().slice(0, 10);
+const STEPS = ["Barbero", "Servicio", "Fecha y hora", "Datos"];
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -19,6 +20,7 @@ function fmtDate(d: string) {
 export default function BookingWidget() {
   const [step, setStep] = useState(1);
   const [barber, setBarber] = useState<Barber | null>(null);
+  const [service, setService] = useState<Service | null>(null);
   const [date, setDate] = useState(today());
   const [slots, setSlots] = useState<string[]>([]);
   const [slotsStatus, setSlotsStatus] = useState<Status>("idle");
@@ -28,11 +30,11 @@ export default function BookingWidget() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (step !== 3 || !barber) return;
+    if (step !== 3 || !barber || !service) return;
     let active = true;
     setSlotsStatus("loading");
     setSlot(null);
-    fetch(`/api/slots?barberId=${barber.id}&date=${date}`)
+    fetch(`/api/slots?barberId=${barber.id}&date=${date}&serviceId=${service.id}`)
       .then((r) => r.json())
       .then((d) => {
         if (!active) return;
@@ -41,11 +43,16 @@ export default function BookingWidget() {
       })
       .catch(() => active && setSlotsStatus("error"));
     return () => { active = false; };
-  }, [step, barber, date]);
+  }, [step, barber, service, date]);
 
   function pickBarber(b: Barber) {
     setBarber(b);
     setStep(2);
+  }
+
+  function pickService(s: Service) {
+    setService(s);
+    setStep(3);
   }
 
   function pickSlot(s: string) {
@@ -55,14 +62,14 @@ export default function BookingWidget() {
 
   async function book(e: React.FormEvent) {
     e.preventDefault();
-    if (!barber || !slot) return;
+    if (!barber || !service || !slot) return;
     setSubmit("loading");
     setError("");
     try {
       const res = await fetch("/api/book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ barberId: barber.id, date, time: slot, clientName: form.name, clientEmail: form.email, clientPhone: form.phone }),
+        body: JSON.stringify({ barberId: barber.id, serviceId: service.id, date, time: slot, clientName: form.name, clientEmail: form.email, clientPhone: form.phone }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error");
@@ -85,16 +92,16 @@ export default function BookingWidget() {
       </h2>
 
       <ol className="mt-7 flex gap-3 font-mono text-xs uppercase tracking-[0.14em] text-tertiary" aria-label="Progreso">
-        {["Barbero", "Fecha", "Horario", "Datos"].map((l, i) => {
+        {STEPS.map((l, i) => {
           const n = i + 1;
-          const active = n === step || (n === 4 && step === 5);
+          const active = n === step;
           return (
             <li key={l} className={`flex items-center gap-2 ${active ? "text-bronze" : ""}`}>
               <span className={`grid size-6 place-items-center rounded-ctl border text-xs ${n <= step ? "border-bronze text-bronze" : "border-border"}`}>
                 {n}
               </span>
               <span className="hidden sm:inline">{l}</span>
-              {i < 3 && <span className="ml-1 hidden h-px w-5 bg-border sm:block" />}
+              {i < STEPS.length - 1 && <span className="ml-1 hidden h-px w-5 bg-border sm:block" />}
             </li>
           );
         })}
@@ -121,9 +128,28 @@ export default function BookingWidget() {
           </div>
         )}
 
-        {/* STEP 2 — Date */}
+        {/* STEP 2 — Service */}
         {step === 2 && (
-          <div className="max-w-sm">
+          <div>
+            <div className="mb-3 font-mono text-xs uppercase tracking-[0.16em] text-tertiary">Barbería</div>
+            <div className="mb-5 grid gap-2 sm:grid-cols-2">
+              {BARBERIA_SERVICES.map((s) => (
+                <ServiceButton key={s.id} s={s} onClick={() => pickService(s)} />
+              ))}
+            </div>
+            <div className="mb-3 font-mono text-xs uppercase tracking-[0.16em] text-tertiary">Color</div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {COLOR_SERVICES.map((s) => (
+                <ServiceButton key={s.id} s={s} onClick={() => pickService(s)} />
+              ))}
+            </div>
+            <Nav onBack={() => setStep(1)} />
+          </div>
+        )}
+
+        {/* STEP 3 — Date + slots together */}
+        {step === 3 && (
+          <div>
             <label htmlFor="date" className="mb-2 block font-mono text-xs uppercase tracking-[0.16em] text-tertiary">Elige el día</label>
             <input
               id="date"
@@ -131,17 +157,11 @@ export default function BookingWidget() {
               min={today()}
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-ctl border border-border bg-ink px-4 py-3 font-mono text-body [color-scheme:dark] focus-visible:outline focus-visible:outline-2 focus-visible:outline-bronze"
+              className="w-full max-w-sm rounded-ctl border border-border bg-ink px-4 py-3 font-mono text-body [color-scheme:dark] focus-visible:outline focus-visible:outline-2 focus-visible:outline-bronze"
             />
-            <Nav onBack={() => setStep(1)} onNext={() => setStep(3)} />
-          </div>
-        )}
 
-        {/* STEP 3 — Slots */}
-        {step === 3 && (
-          <div>
-            <p className="mb-5 font-mono text-xs uppercase tracking-[0.14em] text-tertiary">
-              Horarios para <span className="text-bronze">{barber?.name}</span> · {fmtDate(date)}
+            <p className="mb-3 mt-6 font-mono text-xs uppercase tracking-[0.14em] text-tertiary">
+              Horarios para <span className="text-bronze">{barber?.name}</span> · {service?.name} · {fmtDate(date)}
             </p>
             {slotsStatus === "loading" && <SlotSkeleton />}
             {slotsStatus === "error" && <p className="font-mono text-sm text-bronze">No se pudo cargar. Intenta de nuevo.</p>}
@@ -167,7 +187,7 @@ export default function BookingWidget() {
         {step === 4 && submit !== "success" && (
           <form onSubmit={book} className="max-w-sm">
             <p className="mb-5 font-mono text-xs uppercase tracking-[0.14em] text-tertiary">
-              {barber?.name} · {fmtDate(date)} · <span className="text-bronze">{slot}</span>
+              {barber?.name} · {service?.name} · {fmtDate(date)} · <span className="text-bronze">{slot}</span>
             </p>
             <Field label="Nombre" value={form.name} onChange={(v) => setForm({ ...form, name: v })} autoComplete="name" />
             <Field label="Teléfono" type="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} autoComplete="tel" />
@@ -192,10 +212,10 @@ export default function BookingWidget() {
             <Image src="/assets/sun-gold.png" alt="" width={44} height={44} className="mx-auto mb-[18px] size-11" />
             <p className="font-display text-3xl font-bold tracking-[-0.02em] text-bronze">¡Cita confirmada!</p>
             <p className="mt-3 font-body text-base text-secondary">
-              Te esperamos {fmtDate(date)} a las {slot} con {barber?.name}.
+              Te esperamos {fmtDate(date)} a las {slot} con {barber?.name} para tu {service?.name}.
             </p>
             <button
-              onClick={() => { setStep(1); setSlot(null); setSubmit("idle"); setForm({ name: "", phone: "", email: "" }); }}
+              onClick={() => { setStep(1); setBarber(null); setService(null); setSlot(null); setSubmit("idle"); setForm({ name: "", phone: "", email: "" }); }}
               className="mt-[26px] rounded-ctl border border-border px-6 py-3 font-mono text-xs uppercase tracking-[0.14em] transition-colors hover:border-cream min-h-[44px]"
             >
               Agendar otra
@@ -221,6 +241,21 @@ function Nav({ onBack, onNext }: { onBack?: () => void; onNext?: () => void }) {
         </button>
       )}
     </div>
+  );
+}
+
+function ServiceButton({ s, onClick }: { s: Service; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center justify-between gap-3 rounded-ctl border border-border p-4 text-left transition-colors duration-200 hover:border-bronze focus-visible:outline focus-visible:outline-2 focus-visible:outline-bronze"
+    >
+      <span className="min-w-0">
+        <span className="block font-body font-bold tracking-[-0.01em]">{s.name}</span>
+        <span className="mt-0.5 block font-mono text-xs uppercase tracking-[0.12em] text-tertiary">{s.duration}</span>
+      </span>
+      <span className="whitespace-nowrap font-mono text-sm text-bronze">{s.price}</span>
+    </button>
   );
 }
 
