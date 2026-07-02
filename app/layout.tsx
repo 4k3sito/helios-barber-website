@@ -15,9 +15,9 @@ const body = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Helios Barber · Premium Grooming en Monterrey",
+  title: "Helios Barber · Premium Grooming en CDMX",
   description:
-    "Barbería premium en Monterrey. Cortes, barba y afeitado tradicional. Agenda tu cita en línea.",
+    "Barbería premium en Nápoles, Benito Juárez, Ciudad de México. Cortes, barba y afeitado tradicional. Agenda tu cita en línea.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

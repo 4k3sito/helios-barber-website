@@ -6,6 +6,7 @@ export default function Footer() {
     { href: CONTACT.whatsapp, label: "WhatsApp", value: CONTACT.whatsappDisplay },
     { href: CONTACT.instagram, label: "Instagram", value: CONTACT.instagramDisplay },
     { href: CONTACT.tiktok, label: "TikTok", value: CONTACT.tiktokDisplay },
+    { href: CONTACT.addressUrl, label: "Ubicación", value: CONTACT.address },
   ];
 
   return (
@@ -40,7 +41,7 @@ export default function Footer() {
                 className="group flex items-center justify-between border-t border-white/10 py-5 transition-[padding] duration-300 hover:pl-3 contact-row"
               >
                 <span className="font-mono text-xs uppercase tracking-[0.16em] text-tertiary">{r.label}</span>
-                <span className="font-display text-[clamp(16px,1.6vw,20px)] font-bold">{r.value}</span>
+                <span className="max-w-[60%] text-right font-display text-[clamp(16px,1.6vw,20px)] font-bold">{r.value}</span>
               </a>
             ))}
           </div>
