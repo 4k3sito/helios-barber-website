@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
-import { barbers } from "@/lib/barbers"
+import { barbers, OWNER_CALENDAR_ID } from "@/lib/barbers"
 import { createCalendarEvent } from "@/lib/google-calendar"
+import { sendBookingConfirmation } from "@/lib/email"
 import { LEAD_TIME_HOURS, ALL_SERVICES } from "@/lib/config"
 
 export async function POST(req: Request) {
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
       }
     }
 
-    await createCalendarEvent(barber.calendarId, {
+    const eventDetails = {
       barberId,
       date,
       time,
@@ -48,7 +49,31 @@ export async function POST(req: Request) {
       timeZone: barber.timeZone,
       barberName: barber.name,
       serviceName: service.name,
-    })
+    }
+
+    await createCalendarEvent(barber.calendarId, eventDetails)
+
+    // ponytail: mirror onto the owner's calendar so one place shows every barber's schedule;
+    // don't fail the booking if the owner hasn't shared his calendar with the service account yet
+    try {
+      await createCalendarEvent(OWNER_CALENDAR_ID, eventDetails)
+    } catch (e) {
+      console.error("Owner calendar mirror failed:", e instanceof Error ? e.message : e)
+    }
+
+    // ponytail: the booking already succeeded via Calendar; don't fail the request if the email hiccups
+    try {
+      await sendBookingConfirmation({
+        clientName,
+        clientEmail,
+        barberName: barber.name,
+        serviceName: service.name,
+        date,
+        time,
+      })
+    } catch (e) {
+      console.error("Confirmation email failed:", e instanceof Error ? e.message : e)
+    }
 
     return NextResponse.json({ success: true })
   } catch (e) {

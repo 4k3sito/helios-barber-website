@@ -7,10 +7,17 @@
 3. Create a service account:
    - IAM & Admin → Service Accounts → Create Service Account
    - Download the JSON key
-4. For each barber's Google Calendar:
+4. For each barber's Google Calendar **and the owner's**:
    - Open the calendar settings → Share with specific people
    - Add the service account email (from the JSON key)
    - Permission: "Make changes to events"
+   - (Every booking is created on the barber's calendar and mirrored onto the owner's, so the
+     owner sees all barbers' schedules in one place — this requires his calendar to be shared too.)
+5. For booking confirmation emails, use a Gmail account (e.g. the studio's):
+   - Turn on 2-Step Verification: https://myaccount.google.com/security
+   - Create an App Password: https://myaccount.google.com/apppasswords
+   - (Service accounts can't send Calendar invites to personal Gmail addresses without
+     Domain-Wide Delegation, which only applies to Google Workspace — this sidesteps that.)
 
 ## Environment variables
 
@@ -25,6 +32,10 @@ GCAL_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 GCAL_ALEX_ID=alex@group.calendar.google.com
 GCAL_MARCO_ID=marco@group.calendar.google.com
 GCAL_SARAH_ID=sarah@group.calendar.google.com
+
+# Gmail account + App Password used to send booking confirmation emails
+GMAIL_USER=studio@gmail.com
+GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
 ```
 
 ## Run

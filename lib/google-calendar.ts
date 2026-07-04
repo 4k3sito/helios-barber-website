@@ -1,4 +1,5 @@
 import { google } from "googleapis"
+import { CONTACT } from "./config"
 
 // ponytail: base64-encoded PEM avoids multi-line env var headaches
 function getCredentials() {
@@ -142,6 +143,7 @@ export async function createCalendarEvent(
     requestBody: {
       summary: `✂️ ${booking.clientName} - ${booking.barberName} (${booking.serviceName})`,
       description: `Name: ${booking.clientName}\nEmail: ${booking.clientEmail}\nPhone: ${booking.clientPhone}\nService: ${booking.serviceName}`,
+      location: CONTACT.address,
       start: { dateTime: startDateTime, timeZone: booking.timeZone },
       end: { dateTime: endDateTime, timeZone: booking.timeZone },
     },
