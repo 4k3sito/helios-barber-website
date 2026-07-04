@@ -54,18 +54,18 @@ export default function Marquee() {
   return (
     <div
       ref={container}
-      className="relative overflow-hidden border-y border-bronze/20 bg-gradient-to-r from-bronze/10 via-bronze/6 to-bronze/10 py-4"
+      className="relative overflow-hidden border-y border-accent/20 bg-gradient-to-r from-accent/10 via-accent/6 to-accent/10 py-4"
     >
       {/* Fade edges for ribbon effect */}
       <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-12 bg-gradient-to-r from-ink to-transparent" />
       <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-12 bg-gradient-to-l from-ink to-transparent" />
       {/* Subtle top/bottom shine lines */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-bronze/30 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-bronze/30 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
 
       <div
         ref={track}
-        className="w-max whitespace-nowrap font-mono text-xs uppercase tracking-[0.28em] text-bronze"
+        className="w-max whitespace-nowrap font-mono text-xs uppercase tracking-[0.28em] text-accent"
         aria-hidden
       >
         {buildText(repeatItems(4))}

@@ -14,7 +14,8 @@ const config: Config = {
         body: "#E8E3DB",
         secondary: "#B8AFA4",
         tertiary: "#8A847D",
-        bronze: "#B8895A",
+        accent: "#4FA6E8",
+        "accent-bright": "#78BEF5",
       },
       fontFamily: {
         display: ['"Helvetica Neue"', "Helvetica", "Arial", "sans-serif"],
@@ -34,6 +35,7 @@ const config: Config = {
       },
       maxWidth: { content: "1320px" },
       borderRadius: { card: "3px", ctl: "2px" },
+      zIndex: { "1": "1", "2": "2", "3": "3", nav: "900", overlay: "950" },
     },
   },
   plugins: [],

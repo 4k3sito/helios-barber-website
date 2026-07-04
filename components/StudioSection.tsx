@@ -3,9 +3,9 @@ import Image from "next/image";
 export default function StudioSection() {
   return (
     <section id="estudio" className="mx-auto max-w-content px-[clamp(20px,5vw,72px)] py-[clamp(72px,11vw,150px)]">
-      <div className="mb-10 flex items-center gap-3.5 font-mono text-xs uppercase tracking-[0.2em] text-bronze section-kicker">
+      <div className="mb-10 flex items-center gap-3.5 font-mono text-xs uppercase tracking-[0.2em] text-accent section-kicker">
         <span>(01)</span>
-        <span className="h-px w-[42px] bg-bronze/50" />
+        <span className="h-px w-[42px] bg-accent/50" />
         <span>El estudio</span>
       </div>
       <div className="grid items-center gap-[clamp(34px,6vw,90px)] lg:grid-cols-[1.45fr_1fr]" data-grid>
@@ -44,11 +44,11 @@ export default function StudioSection() {
             className="w-full rounded-card object-cover aspect-[4/5]"
           />
           <Image
-            src="/assets/sun-gold.png"
+            src="/assets/sun-light.png"
             alt=""
             width={64}
             height={64}
-            className="absolute -bottom-[26px] -left-[26px] size-16 rounded-full border border-bronze/40 bg-ink p-3.5"
+            className="absolute -bottom-[26px] -left-[26px] size-16 rounded-full border border-accent/40 bg-ink p-3.5"
           />
         </div>
       </div>

@@ -14,9 +14,9 @@ export default function GaleriaSection() {
       <div className="mx-auto mb-[clamp(34px,5vw,56px)] max-w-content px-[clamp(20px,5vw,72px)]">
         <div className="flex flex-wrap items-end justify-between gap-[18px]">
           <div>
-            <div className="mb-5 flex items-center gap-3.5 font-mono text-xs uppercase tracking-[0.2em] text-bronze section-kicker">
+            <div className="mb-5 flex items-center gap-3.5 font-mono text-xs uppercase tracking-[0.2em] text-accent section-kicker">
               <span>(04)</span>
-              <span className="h-px w-[42px] bg-bronze/50" />
+              <span className="h-px w-[42px] bg-accent/50" />
               <span>El espacio</span>
             </div>
             <h2 className="m-0 font-display text-[clamp(46px,8vw,128px)] font-extrabold leading-[.9] tracking-[-0.04em] section-title">

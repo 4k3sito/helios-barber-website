@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Hero() {
   return (
-    <header id="top" className="relative flex min-h-dvh flex-col overflow-hidden">
+    <header id="top" tabIndex={-1} className="relative flex min-h-dvh flex-col overflow-hidden outline-none">
       <div className="absolute inset-0 z-0">
         <Image
           src="/uploads/3.jpeg"
@@ -20,7 +20,7 @@ export default function Hero() {
 
       {/* top row: kicker + index tag */}
       <div className="relative z-3 flex items-start justify-between gap-5 px-[clamp(38px,6vw,88px)] pt-[clamp(112px,14vh,164px)]">
-        <div className="font-mono text-[11px] uppercase leading-normal tracking-[0.26em] text-bronze hero-kicker">
+        <div className="font-mono text-[11px] uppercase leading-normal tracking-[0.26em] text-accent hero-kicker">
           Est. 2026<br />Estudio de barbería &amp; peluquería
         </div>
         <div className="text-right font-mono text-[11px] uppercase leading-normal tracking-[0.2em] text-secondary">
@@ -31,16 +31,16 @@ export default function Hero() {
       {/* bottom: statement + CTA, in the frame's empty lower-left */}
       <div className="relative z-3 mt-auto flex flex-wrap items-end justify-between gap-8 px-[clamp(38px,6vw,88px)] pb-[clamp(48px,6.5vw,80px)]">
         <div className="max-w-[56ch]">
-          <div className="mb-[22px] h-px w-14 bg-bronze" />
+          <div className="mb-[22px] h-px w-14 bg-accent" />
           <h1 className="m-0 text-balance font-display text-[clamp(30px,4.4vw,58px)] font-bold leading-[1.14] tracking-[-0.025em] text-cream hero-title">
-            Transformamos imagen en <span className="text-bronze">presencia</span>.
+            Transformamos imagen en <em className="font-display italic font-extrabold text-accent-bright">presencia</em>.
           </h1>
           <p className="m-0 mt-5 max-w-[46ch] font-body text-[clamp(14px,1.15vw,16px)] leading-[1.65] text-secondary hero-sub">
             Precisión técnica y experiencia premium para el hombre que entiende la imagen como identidad.
           </p>
           <a
             href="#servicios"
-            className="mt-[30px] inline-flex items-center gap-2.5 rounded-ctl bg-bronze px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink transition-opacity hover:opacity-82"
+            className="mt-[30px] inline-flex items-center gap-2.5 rounded-ctl bg-accent px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink transition-opacity hover:opacity-82"
           >
             Ver servicios ↓
           </a>

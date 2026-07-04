@@ -11,7 +11,7 @@ import Animations from "@/components/Animations";
 
 export default function Home() {
   return (
-    <div className="overflow-x-hidden bg-ink" style={{ "--gold": "#b8895a" } as React.CSSProperties}>
+    <div className="overflow-x-hidden bg-ink">
       <Animations />
       <Nav />
       <Hero />

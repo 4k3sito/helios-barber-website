@@ -22,9 +22,9 @@ export default function ServicesSection() {
       <div className="mx-auto max-w-content">
         <div className="mb-[clamp(40px,6vw,72px)] flex flex-wrap items-end justify-between gap-[22px]">
           <div>
-            <div className="mb-5 flex items-center gap-3.5 font-mono text-xs uppercase tracking-[0.2em] text-bronze section-kicker">
+            <div className="mb-5 flex items-center gap-3.5 font-mono text-xs uppercase tracking-[0.2em] text-accent section-kicker">
               <span>(02)</span>
-              <span className="h-px w-[42px] bg-bronze/60" />
+              <span className="h-px w-[42px] bg-accent/60" />
               <span>Carta de servicios</span>
             </div>
             <h2 className="m-0 font-display text-[clamp(46px,8vw,128px)] font-extrabold leading-[.9] tracking-[-0.04em] section-title">
@@ -57,7 +57,7 @@ export default function ServicesSection() {
             ))}
 
             <div className="mt-[34px] rounded-card bg-surface p-7 text-secondary cta-card">
-              <Image src="/assets/sun-gold.png" alt="" width={38} height={38} className="mb-4 size-[38px]" />
+              <Image src="/assets/sun-light.png" alt="" width={38} height={38} className="mb-4 size-[38px]" />
               <div className="font-body text-[clamp(18px,1.6vw,22px)] font-bold leading-[1.3] tracking-[-0.01em] text-cream">
                 ¿Listo para tu cita?
               </div>
@@ -66,7 +66,7 @@ export default function ServicesSection() {
               </p>
               <a
                 href="#agendar"
-                className="inline-block rounded-ctl bg-bronze px-[22px] py-3 font-mono text-xs uppercase tracking-[0.14em] text-ink"
+                className="inline-block rounded-ctl bg-accent px-[22px] py-3 font-mono text-xs uppercase tracking-[0.14em] text-ink"
               >
                 Reservar ahora →
               </a>
