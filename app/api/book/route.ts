@@ -3,6 +3,7 @@ import { barbers, OWNER_CALENDAR_ID } from "@/lib/barbers"
 import { createCalendarEvent } from "@/lib/google-calendar"
 import { sendBookingConfirmation } from "@/lib/email"
 import { LEAD_TIME_HOURS, ALL_SERVICES } from "@/lib/config"
+import { getEffectiveHours } from "@/lib/schedule-overrides"
 
 export async function POST(req: Request) {
   try {
@@ -23,9 +24,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Service not found" }, { status: 404 })
     }
 
-    // Server-side lead-time check: reject bookings that start too soon
+    // Server-side schedule check: reject bookings on a day off or outside that day's hours
     const [h, m] = time.split(":").map(Number)
     const slotMinutes = h * 60 + m
+    const hours = getEffectiveHours(barber, barberId, date)
+    if (!hours) {
+      return NextResponse.json({ error: "Este barbero no atiende ese día." }, { status: 409 })
+    }
+    const [openH, openM] = hours.start.split(":").map(Number)
+    const [closeH, closeM] = hours.end.split(":").map(Number)
+    if (
+      slotMinutes < openH * 60 + openM ||
+      slotMinutes + service.durationMin > closeH * 60 + closeM
+    ) {
+      return NextResponse.json({ error: "Ese horario está fuera del horario disponible." }, { status: 409 })
+    }
+
+    // Server-side lead-time check: reject bookings that start too soon
     const today = new Date().toISOString().slice(0, 10)
     if (date === today) {
       const nowLocal = new Date(new Date().toLocaleString("en-US", { timeZone: barber.timeZone }))

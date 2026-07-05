@@ -49,8 +49,13 @@ Both describe the same 3 barbers (Fabian, Alexis, Less). Keep them in sync when 
 | `GCAL_CLIENT_EMAIL` | Service account email |
 | `GCAL_PRIVATE_KEY_BASE64` | Base64-encoded RSA private key (avoids multi-line PEM issues) |
 | `GCAL_FABIAN_ID`, `GCAL_ALEXIS_ID`, `GCAL_LESS_ID` | Google Calendar IDs per barber |
+| `ADMIN_PASSWORD` | Shared password gating `/admin/schedule` (owner-only schedule editor) |
 
 See `SETUP.md` for Google Cloud setup steps (service account, Calendar API enablement, calendar sharing).
+
+### Owner schedule overrides (`/admin/schedule`)
+
+Lets the owner mark a barber's day off, or override that day's hours, for the next 4 weeks. Gated by `middleware.ts` (password → SHA-256 cookie, see `ADMIN_PASSWORD`). Overrides are stored in `data/schedule-overrides.json` (gitignored, written via `lib/schedule-overrides.ts`) — a plain JSON file, not a DB, since this app has no other persistence. This requires the host to keep a writable, persistent filesystem across requests (fine on a long-running Node process; would silently stop persisting on ephemeral/serverless hosting). Both `app/api/slots/route.ts` and `app/api/book/route.ts` read overrides via `getEffectiveHours()` so a day-off/hours change is enforced server-side, not just hidden in the UI.
 
 ### Styling
 

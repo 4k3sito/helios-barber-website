@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { barbers } from "@/lib/barbers"
 import { getBusySlots, generateSlots } from "@/lib/google-calendar"
 import { LEAD_TIME_HOURS, ALL_SERVICES } from "@/lib/config"
+import { getEffectiveHours } from "@/lib/schedule-overrides"
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -23,11 +24,16 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Service not found" }, { status: 404 })
   }
 
+  const hours = getEffectiveHours(barber, barberId, dateStr)
+  if (!hours) {
+    return NextResponse.json({ slots: [] })
+  }
+
   const date = new Date(dateStr + "T12:00:00")
   const busy = await getBusySlots(barber.calendarId, date)
   const slots = generateSlots(
     busy,
-    barber.hours,
+    hours,
     barber.slotDurationMin,
     date,
     LEAD_TIME_HOURS,
