@@ -4,8 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { BARBERS, BARBERIA_SERVICES, COLOR_SERVICES, type Barber, type Service } from "@/lib/config";
 
-const today = () => new Date().toISOString().slice(0, 10);
+// ponytail: local date, not toISOString() (UTC) — UTC rolls over at 6pm in Mexico City,
+// which would make the picker think "today" is already tomorrow in the evening.
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 const STEPS = ["Barbero", "Servicio", "Fecha y hora", "Datos"];
+
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -74,6 +85,11 @@ export default function BookingWidget() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error");
       setSubmit("success");
+      window.gtag?.("event", "generate_lead", {
+        value: Number(service.price.replace(/[^0-9.]/g, "")) || undefined,
+        currency: "MXN",
+        item_name: service.name,
+      });
     } catch (err) {
       setSubmit("error");
       setError(err instanceof Error ? err.message : "No se pudo reservar");

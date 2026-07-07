@@ -73,13 +73,16 @@ export function generateSlots(
   const openMinutes = openH * 60 + openM
   const closeMinutes = closeH * 60 + closeM
 
-  // ponytail: compute "now" in the barber's timezone for lead-time cutoff
+  // ponytail: compute "now" in the barber's timezone for lead-time cutoff. Must compare
+  // dates in that same timezone too — comparing against a UTC "today" flips over at UTC
+  // midnight (e.g. 6pm in America/Mexico_City), wrongly treating tomorrow as today and
+  // blocking every slot once the barber's closing time has passed in UTC terms.
   let cutoffMinutes = 0
-  const todayStr = toDateString(new Date())
+  const nowLocal = timeZone
+    ? new Date(new Date().toLocaleString("en-US", { timeZone }))
+    : new Date()
+  const todayStr = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, "0")}-${String(nowLocal.getDate()).padStart(2, "0")}`
   if (leadTimeHours > 0 && toDateString(date) === todayStr) {
-    const nowLocal = timeZone
-      ? new Date(new Date().toLocaleString("en-US", { timeZone }))
-      : new Date()
     cutoffMinutes = nowLocal.getHours() * 60 + nowLocal.getMinutes() + leadTimeHours * 60
   }
 

@@ -40,10 +40,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Ese horario está fuera del horario disponible." }, { status: 409 })
     }
 
-    // Server-side lead-time check: reject bookings that start too soon
-    const today = new Date().toISOString().slice(0, 10)
+    // Server-side lead-time check: reject bookings that start too soon.
+    // Compare "today" in the barber's own timezone, not UTC — otherwise this flips
+    // over at UTC midnight (6pm in America/Mexico_City) and misjudges tomorrow as today.
+    const nowLocal = new Date(new Date().toLocaleString("en-US", { timeZone: barber.timeZone }))
+    const today = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, "0")}-${String(nowLocal.getDate()).padStart(2, "0")}`
     if (date === today) {
-      const nowLocal = new Date(new Date().toLocaleString("en-US", { timeZone: barber.timeZone }))
       const nowMinutes = nowLocal.getHours() * 60 + nowLocal.getMinutes()
       if (slotMinutes < nowMinutes + LEAD_TIME_HOURS * 60) {
         return NextResponse.json(
