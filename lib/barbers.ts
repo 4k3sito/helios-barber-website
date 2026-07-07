@@ -33,7 +33,7 @@ export const barbers: Barber[] = [
   {
     id: "less",
     name: "Less",
-    title: "Rizos & Color",
+    title: "Tijera & Rizos",
     photo: "/uploads/Less.jpeg",
     calendarId: process.env.GCAL_LESS_ID || "less39211@gmail.com",
     timeZone: "America/Mexico_City",

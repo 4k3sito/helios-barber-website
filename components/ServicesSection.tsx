@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { BARBERIA_SERVICES, COLOR_SERVICES } from "@/lib/config";
+import { BARBERIA_SERVICES } from "@/lib/config";
 
 function ServiceRow({ name, duration, price }: { name: string; duration: string; price: string }) {
   return (
@@ -47,16 +47,9 @@ export default function ServicesSection() {
             ))}
           </div>
 
-          {/* Color + CTA */}
+          {/* CTA */}
           <div>
-            <div className="border-b border-[#14110f]/20 pb-[18px] mb-2 font-mono text-xs uppercase tracking-[0.22em] text-[#4a4540]">
-              Color
-            </div>
-            {COLOR_SERVICES.map((s) => (
-              <ServiceRow key={s.name} {...s} />
-            ))}
-
-            <div className="mt-[34px] rounded-card bg-surface p-7 text-secondary cta-card">
+            <div className="rounded-card bg-surface p-7 text-secondary cta-card">
               <Image src="/assets/sun-light.png" alt="" width={38} height={38} className="mb-4 size-[38px]" />
               <div className="font-body text-[clamp(18px,1.6vw,22px)] font-bold leading-[1.3] tracking-[-0.01em] text-cream">
                 ¿Listo para tu cita?

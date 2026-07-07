@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { BARBERS, BARBERIA_SERVICES, COLOR_SERVICES, type Barber, type Service } from "@/lib/config";
+import { BARBERS, BARBERIA_SERVICES, type Barber, type Service } from "@/lib/config";
 
 // ponytail: local date, not toISOString() (UTC) — UTC rolls over at 6pm in Mexico City,
 // which would make the picker think "today" is already tomorrow in the evening.
@@ -148,14 +148,8 @@ export default function BookingWidget() {
         {step === 2 && (
           <div>
             <div className="mb-3 font-mono text-xs uppercase tracking-[0.16em] text-tertiary">Barbería</div>
-            <div className="mb-5 grid gap-2 sm:grid-cols-2">
-              {BARBERIA_SERVICES.map((s) => (
-                <ServiceButton key={s.id} s={s} onClick={() => pickService(s)} />
-              ))}
-            </div>
-            <div className="mb-3 font-mono text-xs uppercase tracking-[0.16em] text-tertiary">Color</div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {COLOR_SERVICES.map((s) => (
+              {BARBERIA_SERVICES.map((s) => (
                 <ServiceButton key={s.id} s={s} onClick={() => pickService(s)} />
               ))}
             </div>

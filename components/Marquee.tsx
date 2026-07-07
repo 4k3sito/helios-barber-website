@@ -9,7 +9,6 @@ gsap.registerPlugin(useGSAP);
 const ITEMS = [
   "Corte",
   "Barba",
-  "Color",
   "Desvanecidos",
   "Diseño de ceja",
   "Experiencia premium",

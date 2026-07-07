@@ -36,9 +36,9 @@ export const BARBERS: Barber[] = [
   {
     id: "less",
     name: "Less",
-    role: "Rizos & Color",
+    role: "Tijera & Rizos",
     photo: "/uploads/Less.jpeg",
-    desc: "Especialista en cortes a tijera, rizos y diseños de color.",
+    desc: "Especialista en cortes a tijera y rizos.",
     calendarId: process.env.GCAL_LESS_ID || "primary",
     timeZone: "America/Mexico_City",
     hours: { start: "09:00", end: "17:00" },
@@ -63,13 +63,7 @@ export const BARBERIA_SERVICES: Service[] = [
   { id: "corte-barba-ceja", name: "Corte + Barba + Ceja", duration: "1:40 hrs", durationMin: 100, price: "$650" },
 ];
 
-export const COLOR_SERVICES: Service[] = [
-  { id: "tinte", name: "Tinte", duration: "1:30 hrs", durationMin: 90, price: "$600" },
-  { id: "decoloracion", name: "Decoloración", duration: "1:15 hrs", durationMin: 75, price: "$600" },
-  { id: "decoloracion-tinte", name: "Decoloración + Tinte", duration: "2:00 hrs", durationMin: 120, price: "$1,100" },
-];
-
-export const ALL_SERVICES: Service[] = [...BARBERIA_SERVICES, ...COLOR_SERVICES];
+export const ALL_SERVICES: Service[] = [...BARBERIA_SERVICES];
 
 export const CONTACT = {
   whatsapp: "https://wa.me/525523333188",
