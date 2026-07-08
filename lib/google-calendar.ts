@@ -30,6 +30,17 @@ function toDateString(d: Date) {
   return d.toISOString().slice(0, 10)
 }
 
+// ponytail: a bare "YYYY-MM-DDTHH:MM:SS" is parsed as the SERVER's local time, not the
+// barber's. Production runs UTC, so an unlabeled "20:00" became 8pm UTC (2pm CDMX) — 6h off
+// from what it should mean, silently colliding with unrelated bookings 6h earlier. Appending
+// the real offset for the barber's zone fixes the comparison regardless of server TZ.
+function tzOffset(date: Date, timeZone: string): string {
+  const part = new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "longOffset" })
+    .formatToParts(date)
+    .find((p) => p.type === "timeZoneName")?.value
+  return !part || part === "GMT" ? "+00:00" : part.slice(3)
+}
+
 export interface BusySlot {
   start: string
   end: string
@@ -94,7 +105,8 @@ export function generateSlots(
 
     const h = Math.floor(m / 60)
     const min = m % 60
-    const startIso = `${toDateString(date)}T${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}:00`
+    const offset = timeZone ? tzOffset(date, timeZone) : ""
+    const startIso = `${toDateString(date)}T${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}:00${offset}`
 
     const startMs = new Date(startIso).getTime()
     const endMs = startMs + durationMin * 60_000

@@ -94,6 +94,25 @@ describe("generateSlots", () => {
     })
   })
 
+  describe("timezone-aware overlap check", () => {
+    it("does not let a same-day-earlier booking phantom-block a slot 6h later (UTC-6 zones)", () => {
+      // Real booking at 14:30 CDMX (America/Mexico_City, UTC-6) -> Google reports it as 20:30Z-21:25Z.
+      // A naive (offset-less) candidate for "20:00" gets parsed as 20:00 UTC = 2pm CDMX,
+      // which wrongly overlaps this busy block. With the timezone fix it must not.
+      const busy: BusySlot[] = [{ start: "2026-07-08T20:30:00Z", end: "2026-07-08T21:25:00Z" }]
+      const slots = generateSlots(
+        busy,
+        { start: "12:00", end: "21:00" },
+        30,
+        new Date("2026-07-08T12:00:00"),
+        0,
+        "America/Mexico_City",
+        55
+      )
+      expect(slots).toContain("20:00")
+    })
+  })
+
   describe("lead time", () => {
     it("leadTimeHours=0 does not filter (backward compatible)", () => {
       const slots = generateSlots([], { start: "09:00", end: "11:00" }, 30, date(), 0)
