@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-**Next.js 14 App Router** single-page site for Helios Barber Studio (Monterrey, MX). No database — availability is computed in-memory from Google Calendar free/busy queries. No state management library, just React hooks.
+**Next.js 14 App Router** single-page site for Helios Barber Studio (Ciudad de México, MX). Availability is computed in-memory from Google Calendar free/busy queries — Calendar remains the source of truth for bookings. A Supabase (Postgres) database (`lib/db.ts`) stores schedule overrides and a record copy of each appointment; see `schema.sql`. No state management library, just React hooks.
 
 ### Key directories
 
@@ -50,12 +50,17 @@ Both describe the same 3 barbers (Fabian, Alexis, Less). Keep them in sync when 
 | `GCAL_PRIVATE_KEY_BASE64` | Base64-encoded RSA private key (avoids multi-line PEM issues) |
 | `GCAL_FABIAN_ID`, `GCAL_ALEXIS_ID`, `GCAL_LESS_ID` | Google Calendar IDs per barber |
 | `ADMIN_PASSWORD` | Shared password gating `/admin/schedule` (owner-only schedule editor) |
+| `SUPABASE_URL`, `SUPABASE_API_KEY` | Supabase project URL + service_role key (server-only, bypasses RLS — never the anon key). Must also be set in hPanel's Node.js App env vars, since `.env.local` isn't deployed (deploy is GitHub push → Hostinger auto-redeploy) |
 
 See `SETUP.md` for Google Cloud setup steps (service account, Calendar API enablement, calendar sharing).
 
 ### Owner schedule overrides (`/admin/schedule`)
 
-Lets the owner mark a barber's day off, or override that day's hours, for the next 4 weeks. Gated by `middleware.ts` (password → SHA-256 cookie, see `ADMIN_PASSWORD`). Overrides are stored in `data/schedule-overrides.json` (gitignored, written via `lib/schedule-overrides.ts`) — a plain JSON file, not a DB, since this app has no other persistence. This requires the host to keep a writable, persistent filesystem across requests (fine on a long-running Node process; would silently stop persisting on ephemeral/serverless hosting). Both `app/api/slots/route.ts` and `app/api/book/route.ts` read overrides via `getEffectiveHours()` so a day-off/hours change is enforced server-side, not just hidden in the UI.
+Lets the owner mark a barber's day off, or override that day's hours, for the next 4 weeks. Gated by `middleware.ts` (password → SHA-256 cookie, see `ADMIN_PASSWORD`). Overrides are stored in the `schedule_overrides` Supabase table (see `lib/db.ts` / `schema.sql`), written via `lib/schedule-overrides.ts`. Both `app/api/slots/route.ts` and `app/api/book/route.ts` read overrides via `getEffectiveHours()` so a day-off/hours change is enforced server-side, not just hidden in the UI.
+
+### Appointments table
+
+`app/api/book/route.ts` also inserts a row into the `appointments` table after the Calendar event is created — a record/reporting copy only. Google Calendar stays the source of truth for availability (see "Data flow: booking" above); if the DB insert fails, the booking still succeeds since the Calendar event already exists.
 
 ### Styling
 

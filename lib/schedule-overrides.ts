@@ -1,55 +1,69 @@
-import fs from "fs"
-import path from "path"
+import { supabase } from "@/lib/db"
 
 export type ScheduleOverride = { dayOff: true } | { start: string; end: string }
 type OverridesByDate = Record<string, ScheduleOverride>
 type OverridesByBarber = Record<string, OverridesByDate>
 
-// ponytail: JSON file on disk, no DB. Needs a persistent (non-serverless) host and a
-// writable `data/` dir that survives redeploys — swap for a KV/DB if that stops holding.
-const FILE_PATH = path.join(process.cwd(), "data", "schedule-overrides.json")
+interface OverrideRow {
+  barber_id: string
+  date: string
+  day_off: boolean
+  start_time: string | null
+  end_time: string | null
+}
 
-function readAll(): OverridesByBarber {
-  try {
-    return JSON.parse(fs.readFileSync(FILE_PATH, "utf8"))
-  } catch {
-    return {}
+function toOverride(row: OverrideRow): ScheduleOverride {
+  return row.day_off ? { dayOff: true } : { start: row.start_time!.slice(0, 5), end: row.end_time!.slice(0, 5) }
+}
+
+export async function getAllOverrides(): Promise<OverridesByBarber> {
+  const { data, error } = await supabase.from("schedule_overrides").select("*")
+  if (error) throw error
+  const result: OverridesByBarber = {}
+  for (const row of (data ?? []) as OverrideRow[]) {
+    result[row.barber_id] = { ...result[row.barber_id], [row.date]: toOverride(row) }
   }
+  return result
 }
 
-function writeAll(data: OverridesByBarber) {
-  fs.mkdirSync(path.dirname(FILE_PATH), { recursive: true })
-  fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2))
+export async function getOverride(barberId: string, date: string): Promise<ScheduleOverride | undefined> {
+  const { data, error } = await supabase
+    .from("schedule_overrides")
+    .select("*")
+    .eq("barber_id", barberId)
+    .eq("date", date)
+    .maybeSingle()
+  if (error) throw error
+  return data ? toOverride(data as OverrideRow) : undefined
 }
 
-export function getAllOverrides(): OverridesByBarber {
-  return readAll()
+export async function setOverride(barberId: string, date: string, override: ScheduleOverride) {
+  const dayOff = "dayOff" in override
+  const { error } = await supabase.from("schedule_overrides").upsert(
+    {
+      barber_id: barberId,
+      date,
+      day_off: dayOff,
+      start_time: dayOff ? null : override.start,
+      end_time: dayOff ? null : override.end,
+    },
+    { onConflict: "barber_id,date" }
+  )
+  if (error) throw error
 }
 
-export function getOverride(barberId: string, date: string): ScheduleOverride | undefined {
-  return readAll()[barberId]?.[date]
-}
-
-export function setOverride(barberId: string, date: string, override: ScheduleOverride) {
-  const all = readAll()
-  all[barberId] = { ...all[barberId], [date]: override }
-  writeAll(all)
-}
-
-export function clearOverride(barberId: string, date: string) {
-  const all = readAll()
-  if (!all[barberId]) return
-  delete all[barberId][date]
-  writeAll(all)
+export async function clearOverride(barberId: string, date: string) {
+  const { error } = await supabase.from("schedule_overrides").delete().eq("barber_id", barberId).eq("date", date)
+  if (error) throw error
 }
 
 /** Effective working hours for a barber on a date: null means the barber is off. */
-export function getEffectiveHours(
+export async function getEffectiveHours(
   barber: { hours: { start: string; end: string } },
   barberId: string,
   date: string
-): { start: string; end: string } | null {
-  const override = getOverride(barberId, date)
+): Promise<{ start: string; end: string } | null> {
+  const override = await getOverride(barberId, date)
   if (!override) return barber.hours
   if ("dayOff" in override) return null
   return override

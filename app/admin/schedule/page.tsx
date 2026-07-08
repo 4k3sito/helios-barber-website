@@ -9,12 +9,16 @@ type Overrides = Record<string, Record<string, Override>>;
 type RowState = { dayOff: boolean; start: string; end: string; saving: boolean; savedAt: number };
 
 const DAYS_AHEAD = 28;
+const TIME_ZONE = "America/Mexico_City";
 
+// ponytail: reuse the CDMX-local "today" pattern from app/api/book/route.ts —
+// new Date().toISOString() reads UTC and silently skips "today" after 6pm CDMX.
 function dateRange(n: number) {
   const out: string[] = [];
-  const d = new Date();
+  const d = new Date(new Date().toLocaleString("en-US", { timeZone: TIME_ZONE }));
+  d.setHours(0, 0, 0, 0);
   for (let i = 0; i < n; i++) {
-    out.push(d.toISOString().slice(0, 10));
+    out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
     d.setDate(d.getDate() + 1);
   }
   return out;

@@ -4,4 +4,3 @@ node_modules
 next-env.d.ts
 heliosbarber-*.json
 tsconfig.tsbuildinfo
-data/schedule-overrides.json

@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Service not found" }, { status: 404 })
   }
 
-  const hours = getEffectiveHours(barber, barberId, dateStr)
+  const hours = await getEffectiveHours(barber, barberId, dateStr)
   if (!hours) {
     return NextResponse.json({ slots: [] })
   }

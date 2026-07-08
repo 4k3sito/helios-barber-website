@@ -3,7 +3,7 @@ import { barbers } from "@/lib/barbers"
 import { getAllOverrides, setOverride, clearOverride } from "@/lib/schedule-overrides"
 
 export async function GET() {
-  return NextResponse.json({ overrides: getAllOverrides() })
+  return NextResponse.json({ overrides: await getAllOverrides() })
 }
 
 export async function POST(req: Request) {
@@ -18,14 +18,14 @@ export async function POST(req: Request) {
   }
 
   if (dayOff) {
-    setOverride(barberId, date, { dayOff: true })
+    await setOverride(barberId, date, { dayOff: true })
   } else if (start && end) {
     if (!/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end) || start >= end) {
       return NextResponse.json({ error: "Horario inválido" }, { status: 400 })
     }
-    setOverride(barberId, date, { start, end })
+    await setOverride(barberId, date, { start, end })
   } else {
-    clearOverride(barberId, date)
+    await clearOverride(barberId, date)
   }
 
   return NextResponse.json({ success: true })

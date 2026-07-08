@@ -4,6 +4,7 @@ import { createCalendarEvent } from "@/lib/google-calendar"
 import { sendBookingConfirmation } from "@/lib/email"
 import { LEAD_TIME_HOURS, ALL_SERVICES } from "@/lib/config"
 import { getEffectiveHours } from "@/lib/schedule-overrides"
+import { supabase } from "@/lib/db"
 
 export async function POST(req: Request) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
     // Server-side schedule check: reject bookings on a day off or outside that day's hours
     const [h, m] = time.split(":").map(Number)
     const slotMinutes = h * 60 + m
-    const hours = getEffectiveHours(barber, barberId, date)
+    const hours = await getEffectiveHours(barber, barberId, date)
     if (!hours) {
       return NextResponse.json({ error: "Este barbero no atiende ese día." }, { status: 409 })
     }
@@ -69,6 +70,19 @@ export async function POST(req: Request) {
     }
 
     await createCalendarEvent(barber.calendarId, eventDetails)
+
+    // ponytail: Calendar is still the source of truth for availability; this row is just a record.
+    // Don't fail the booking if the DB insert hiccups — the appointment already exists on Calendar.
+    const { error: insertError } = await supabase.from("appointments").insert({
+      barber_id: barberId,
+      service_id: serviceId,
+      date,
+      time,
+      client_name: clientName,
+      client_email: clientEmail,
+      client_phone: clientPhone || null,
+    })
+    if (insertError) console.error("Appointment DB insert failed:", insertError.message)
 
     // ponytail: mirror onto the owner's calendar so one place shows every barber's schedule;
     // don't fail the booking if the owner hasn't shared his calendar with the service account yet
