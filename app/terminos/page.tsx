@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { LEAD_TIME_HOURS } from "@/lib/config";
 
 export const metadata = { title: "Términos de servicio · Helios Barber" };
 
@@ -14,8 +13,7 @@ export default function Terminos() {
       </h1>
       <div className="mt-8 space-y-5 font-body text-base leading-[1.7] text-secondary">
         <p>
-          Las citas se agendan con al menos {LEAD_TIME_HOURS} horas de anticipación. Al reservar,
-          el horario queda apartado exclusivamente para ti con el barbero elegido.
+          Al reservar, el horario queda apartado exclusivamente para ti con el barbero elegido.
         </p>
         <p>
           Si necesitas cancelar o cambiar tu cita, avísanos por WhatsApp con la mayor anticipación

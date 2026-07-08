@@ -76,5 +76,5 @@ export const CONTACT = {
   addressUrl: "https://maps.google.com/?q=Dakota+95,+Napoles,+Benito+Juarez,+Ciudad+de+Mexico",
 };
 
-// ponytail: slots closer than this to "now" are hidden (avoids rushed bookings)
-export const LEAD_TIME_HOURS = 2;
+// ponytail: 0 disables the cutoff — owner books last-minute walk-ins himself, don't block him
+export const LEAD_TIME_HOURS = 0;
