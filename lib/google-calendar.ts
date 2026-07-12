@@ -1,4 +1,5 @@
 import { google } from "googleapis"
+import { createHash } from "crypto"
 import { CONTACT } from "./config"
 
 // ponytail: base64-encoded PEM avoids multi-line env var headaches
@@ -30,6 +31,12 @@ function toDateString(d: Date) {
   return d.toISOString().slice(0, 10)
 }
 
+function addDays(date: string, days: number) {
+  const value = new Date(`${date}T12:00:00Z`)
+  value.setUTCDate(value.getUTCDate() + days)
+  return value.toISOString().slice(0, 10)
+}
+
 // ponytail: a bare "YYYY-MM-DDTHH:MM:SS" is parsed as the SERVER's local time, not the
 // barber's. Production runs UTC, so an unlabeled "20:00" became 8pm UTC (2pm CDMX) — 6h off
 // from what it should mean, silently colliding with unrelated bookings 6h earlier. Appending
@@ -41,6 +48,21 @@ function tzOffset(date: Date, timeZone: string): string {
   return !part || part === "GMT" ? "+00:00" : part.slice(3)
 }
 
+function localDateTime(date: string, time: string, timeZone: string) {
+  // Noon avoids shifting the intended calendar day when the server runs in UTC.
+  const reference = new Date(`${date}T12:00:00Z`)
+  return `${date}T${time}:00${tzOffset(reference, timeZone)}`
+}
+
+/** RFC 3339 bounds for a complete calendar day in the barber's timezone. */
+export function getCalendarDayBounds(date: Date, timeZone: string) {
+  const day = toDateString(date)
+  return {
+    timeMin: localDateTime(day, "00:00", timeZone),
+    timeMax: localDateTime(addDays(day, 1), "00:00", timeZone),
+  }
+}
+
 export interface BusySlot {
   start: string
   end: string
@@ -48,17 +70,18 @@ export interface BusySlot {
 
 export async function getBusySlots(
   calendarId: string,
-  date: Date
+  date: Date,
+  timeZone: string
 ): Promise<BusySlot[]> {
   if (!calendarId) return []
 
   const cal = getCalendar()
-  const day = toDateString(date)
+  const { timeMin, timeMax } = getCalendarDayBounds(date, timeZone)
 
   const res = await cal.freebusy.query({
     requestBody: {
-      timeMin: `${day}T00:00:00Z`,
-      timeMax: `${day}T23:59:59Z`,
+      timeMin,
+      timeMax,
       items: [{ id: calendarId }],
     },
   })
@@ -139,9 +162,20 @@ export interface Booking {
   serviceName: string
 }
 
+/**
+ * A deterministic Calendar event id makes a duplicate submission for the exact
+ * same barber/date/time fail at Google Calendar instead of creating two events.
+ * Google accepts lowercase base32hex characters; a SHA-256 hex digest satisfies it.
+ */
+export function bookingEventId(booking: Pick<Booking, "barberId" | "date" | "time">) {
+  const source = `${booking.barberId}:${booking.date}:${booking.time}`
+  return `h${createHash("sha256").update(source).digest("hex")}`
+}
+
 export async function createCalendarEvent(
   calendarId: string,
-  booking: Booking
+  booking: Booking,
+  eventId: string = bookingEventId(booking)
 ) {
   const cal = getCalendar()
   const startDateTime = `${booking.date}T${booking.time}:00`
@@ -156,6 +190,7 @@ export async function createCalendarEvent(
   await cal.events.insert({
     calendarId,
     requestBody: {
+      id: eventId,
       summary: `✂️ ${booking.clientName} - ${booking.barberName} (${booking.serviceName})`,
       description: `Name: ${booking.clientName}\nEmail: ${booking.clientEmail}\nPhone: ${booking.clientPhone}\nService: ${booking.serviceName}`,
       location: CONTACT.address,

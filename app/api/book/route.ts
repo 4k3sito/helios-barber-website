@@ -1,10 +1,34 @@
 import { NextResponse } from "next/server"
 import { barbers, OWNER_CALENDAR_ID } from "@/lib/barbers"
-import { createCalendarEvent } from "@/lib/google-calendar"
+import { createCalendarEvent, generateSlots, getBusySlots } from "@/lib/google-calendar"
 import { sendBookingConfirmation } from "@/lib/email"
 import { LEAD_TIME_HOURS, ALL_SERVICES } from "@/lib/config"
 import { getEffectiveHours } from "@/lib/schedule-overrides"
 import { supabase } from "@/lib/db"
+
+// Google Calendar allows overlapping events. Serialize attempts for one barber and
+// day inside this running instance, then verify Calendar again immediately before
+// inserting the event. The deterministic event id below also protects exact-slot
+// duplicates if two requests reach separate instances at the same time.
+const bookingQueues = new Map<string, Promise<void>>()
+
+async function withBookingLock<T>(key: string, callback: () => Promise<T>): Promise<T> {
+  const previous = bookingQueues.get(key) ?? Promise.resolve()
+  let release!: () => void
+  const gate = new Promise<void>((resolve) => { release = resolve })
+  const queue = previous.then(() => gate)
+  bookingQueues.set(key, queue)
+
+  await previous
+  try {
+    return await callback()
+  } finally {
+    release()
+    void queue.then(() => {
+      if (bookingQueues.get(key) === queue) bookingQueues.delete(key)
+    })
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -69,44 +93,79 @@ export async function POST(req: Request) {
       serviceName: service.name,
     }
 
-    await createCalendarEvent(barber.calendarId, eventDetails)
+    return await withBookingLock(`${barberId}:${date}`, async () => {
+      // The page can be stale while another client books. Calendar is the source
+      // of truth, so check it again at the last possible moment before insertion.
+      const bookingDate = new Date(`${date}T12:00:00Z`)
+      const busy = await getBusySlots(barber.calendarId, bookingDate, barber.timeZone)
+      const availableSlots = generateSlots(
+        busy,
+        hours,
+        barber.slotDurationMin,
+        bookingDate,
+        LEAD_TIME_HOURS,
+        barber.timeZone,
+        service.durationMin
+      )
+      if (!availableSlots.includes(time)) {
+        return NextResponse.json(
+          { error: "Este horario acaba de ser reservado. Elige otro horario." },
+          { status: 409 }
+        )
+      }
 
-    // ponytail: Calendar is still the source of truth for availability; this row is just a record.
-    // Don't fail the booking if the DB insert hiccups — the appointment already exists on Calendar.
-    const { error: insertError } = await supabase.from("appointments").insert({
-      barber_id: barberId,
-      service_id: serviceId,
-      date,
-      time,
-      client_name: clientName,
-      client_email: clientEmail,
-      client_phone: clientPhone || null,
-    })
-    if (insertError) console.error("Appointment DB insert failed:", insertError.message)
+      try {
+        await createCalendarEvent(barber.calendarId, eventDetails)
+      } catch (e) {
+        const status = e && typeof e === "object" && "response" in e
+          ? (e as { response?: { status?: number } }).response?.status
+          : undefined
+        if (status === 409) {
+          return NextResponse.json(
+            { error: "Este horario acaba de ser reservado. Elige otro horario." },
+            { status: 409 }
+          )
+        }
+        throw e
+      }
 
-    // ponytail: mirror onto the owner's calendar so one place shows every barber's schedule;
-    // don't fail the booking if the owner hasn't shared his calendar with the service account yet
-    try {
-      await createCalendarEvent(OWNER_CALENDAR_ID, eventDetails)
-    } catch (e) {
-      console.error("Owner calendar mirror failed:", e instanceof Error ? e.message : e)
-    }
-
-    // ponytail: the booking already succeeded via Calendar; don't fail the request if the email hiccups
-    try {
-      await sendBookingConfirmation({
-        clientName,
-        clientEmail,
-        barberName: barber.name,
-        serviceName: service.name,
+      // ponytail: Calendar is still the source of truth for availability; this row is just a record.
+      // Don't fail the booking if the DB insert hiccups — the appointment already exists on Calendar.
+      const { error: insertError } = await supabase.from("appointments").insert({
+        barber_id: barberId,
+        service_id: serviceId,
         date,
         time,
+        client_name: clientName,
+        client_email: clientEmail,
+        client_phone: clientPhone || null,
       })
-    } catch (e) {
-      console.error("Confirmation email failed:", e instanceof Error ? e.message : e)
-    }
+      if (insertError) console.error("Appointment DB insert failed:", insertError.message)
 
-    return NextResponse.json({ success: true })
+      // ponytail: mirror onto the owner's calendar so one place shows every barber's schedule;
+      // don't fail the booking if the owner hasn't shared his calendar with the service account yet
+      try {
+        await createCalendarEvent(OWNER_CALENDAR_ID, eventDetails)
+      } catch (e) {
+        console.error("Owner calendar mirror failed:", e instanceof Error ? e.message : e)
+      }
+
+      // ponytail: the booking already succeeded via Calendar; don't fail the request if the email hiccups
+      try {
+        await sendBookingConfirmation({
+          clientName,
+          clientEmail,
+          barberName: barber.name,
+          serviceName: service.name,
+          date,
+          time,
+        })
+      } catch (e) {
+        console.error("Confirmation email failed:", e instanceof Error ? e.message : e)
+      }
+
+      return NextResponse.json({ success: true })
+    })
   } catch (e) {
     const message = e instanceof Error ? e.message : "Booking failed"
     const detail = e && typeof e === "object" && "response" in e

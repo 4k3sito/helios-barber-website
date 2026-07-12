@@ -39,6 +39,7 @@ export default function BookingWidget() {
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [submit, setSubmit] = useState<Status>("idle");
   const [error, setError] = useState("");
+  const [availabilityError, setAvailabilityError] = useState("");
 
   useEffect(() => {
     if (step !== 3 || !barber || !service) return;
@@ -63,10 +64,12 @@ export default function BookingWidget() {
 
   function pickService(s: Service) {
     setService(s);
+    setAvailabilityError("");
     setStep(3);
   }
 
   function pickSlot(s: string) {
+    setAvailabilityError("");
     setSlot(s);
     setStep(4);
   }
@@ -83,7 +86,16 @@ export default function BookingWidget() {
         body: JSON.stringify({ barberId: barber.id, serviceId: service.id, date, time: slot, clientName: form.name, clientEmail: form.email, clientPhone: form.phone }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Error");
+      if (!res.ok) {
+        if (res.status === 409) {
+          setAvailabilityError(data.error ?? "Este horario ya no está disponible.");
+          setSlot(null);
+          setSubmit("idle");
+          setStep(3);
+          return;
+        }
+        throw new Error(data.error ?? "Error");
+      }
       setSubmit("success");
       window.gtag?.("event", "generate_lead", {
         value: Number(service.price.replace(/[^0-9.]/g, "")) || undefined,
@@ -173,6 +185,7 @@ export default function BookingWidget() {
             <p className="mb-3 mt-6 font-mono text-xs uppercase tracking-[0.14em] text-tertiary">
               Horarios para <span className="text-accent">{barber?.name}</span> · {service?.name} · {fmtDate(date)}
             </p>
+            {availabilityError && <p role="alert" className="mb-3 font-mono text-sm text-accent">{availabilityError}</p>}
             {slotsStatus === "loading" && <SlotSkeleton />}
             {slotsStatus === "error" && <p className="font-mono text-sm text-accent">No se pudo cargar. Intenta de nuevo.</p>}
             {slotsStatus === "idle" && slots.length === 0 && <p className="text-secondary">Sin horarios libres este día. Prueba otra fecha.</p>}

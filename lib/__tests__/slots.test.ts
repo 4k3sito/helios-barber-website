@@ -1,11 +1,43 @@
 import { describe, it, expect } from "vitest"
-import { generateSlots, type BusySlot } from "@/lib/google-calendar"
+import { bookingEventId, generateSlots, getCalendarDayBounds, type BusySlot } from "@/lib/google-calendar"
 
 function date(day = "2026-06-25") {
   return new Date(day + "T12:00:00")
 }
 
 describe("generateSlots", () => {
+  it("uses the full local calendar day when querying Google Calendar", () => {
+    expect(getCalendarDayBounds(date("2026-07-08"), "America/Mexico_City")).toEqual({
+      timeMin: "2026-07-08T00:00:00-06:00",
+      timeMax: "2026-07-09T00:00:00-06:00",
+    })
+  })
+
+  it("blocks an evening CDMX booking returned by Google Calendar", () => {
+    const busy: BusySlot[] = [
+      // 18:00–19:00 in CDMX on July 8 (midnight to 1am UTC on July 9).
+      { start: "2026-07-09T00:00:00Z", end: "2026-07-09T01:00:00Z" },
+    ]
+    const slots = generateSlots(
+      busy,
+      { start: "17:00", end: "19:00" },
+      30,
+      date("2026-07-08"),
+      0,
+      "America/Mexico_City",
+      30
+    )
+
+    expect(slots).toEqual(["17:00", "17:30"])
+  })
+
+  it("creates the same Calendar event id for the same barber and time", () => {
+    const booking = { barberId: "alexis", date: "2026-07-08", time: "10:30" }
+    expect(bookingEventId(booking)).toBe(bookingEventId(booking))
+    expect(bookingEventId(booking)).toMatch(/^h[0-9a-f]{64}$/)
+    expect(bookingEventId(booking)).not.toBe(bookingEventId({ ...booking, time: "11:00" }))
+  })
+
   it("returns all slots when nothing is busy", () => {
     const slots = generateSlots([], { start: "09:00", end: "17:00" }, 60, date())
     expect(slots).toEqual([

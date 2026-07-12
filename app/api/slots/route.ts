@@ -30,7 +30,7 @@ export async function GET(req: Request) {
   }
 
   const date = new Date(dateStr + "T12:00:00")
-  const busy = await getBusySlots(barber.calendarId, date)
+  const busy = await getBusySlots(barber.calendarId, date, barber.timeZone)
   const slots = generateSlots(
     busy,
     hours,
