@@ -1,2 +1,6 @@
 # helios-barber-website
-Website with schedule system with Google Calendar API implementation
+
+
+Barber Shop Website locates in CDMX
+
+Scheduling system linked with Google Calendar
