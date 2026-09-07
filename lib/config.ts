@@ -55,11 +55,12 @@ export interface Service {
 }
 
 export const BARBERIA_SERVICES: Service[] = [
-  { id: "corte", name: "Corte de Pelo", duration: "55 min", durationMin: 55, price: "$400" },
-  { id: "corte-barba", name: "Corte + Barba", duration: "1:20 hrs", durationMin: 80, price: "$600" },
-  { id: "barba", name: "Diseño y Perfilado de Barba", duration: "40 min", durationMin: 40, price: "$300" },
+  { id: "corte", name: "Corte de Pelo", duration: "40 min", durationMin: 40, price: "$400" },
+  { id: "corte-nino", name: "Corte de Niño", duration: "35 min", durationMin: 35, price: "$300" },
+  { id: "corte-barba", name: "Corte + Barba", duration: "1 hora", durationMin: 60, price: "$600" },
+  { id: "barba", name: "Diseño y Perfilado de Barba", duration: "30 min", durationMin: 30, price: "$300" },
   { id: "ceja", name: "Diseño y Limpieza de Ceja", duration: "15 min", durationMin: 15, price: "$150" },
-  { id: "corte-ceja", name: "Corte + Ceja", duration: "1:05 hrs", durationMin: 65, price: "$500" },
+  { id: "corte-ceja", name: "Corte + Ceja", duration: "45 min", durationMin: 45, price: "$500" },
   { id: "corte-barba-ceja", name: "Corte + Barba + Ceja", duration: "1:40 hrs", durationMin: 100, price: "$650" },
 ];
 
