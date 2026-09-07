@@ -1,5 +1,5 @@
 import { google } from "googleapis"
-import { createHash } from "crypto"
+import { createHash, randomBytes } from "crypto"
 import { CONTACT } from "./config"
 
 // ponytail: base64-encoded PEM avoids multi-line env var headaches
@@ -172,6 +172,32 @@ export function bookingEventId(booking: Pick<Booking, "barberId" | "date" | "tim
   return `h${createHash("sha256").update(source).digest("hex")}`
 }
 
+/** googleapis reports the HTTP status on `code` or on `response.status` depending on the failure. */
+function errorStatus(e: unknown): number | undefined {
+  if (!e || typeof e !== "object") return undefined
+  const err = e as { code?: unknown; response?: { status?: number } }
+  return typeof err.code === "number" ? err.code : err.response?.status
+}
+
+/**
+ * True when the deterministic id no longer holds the requested slot — the appointment was
+ * deleted (tombstone) or moved to another time, so the hour is free to book again.
+ * Compares absolute instants: Google returns `dateTime` in mixed offsets (some events come
+ * back as "-06:00", others as "Z"), so comparing the wall-clock text would read an unmoved
+ * event as moved and insert a duplicate on top of a live appointment.
+ */
+function idLeftThisSlot(
+  event: { status?: string | null; start?: { dateTime?: string | null } | null },
+  booking: Booking
+): boolean {
+  if (event.status === "cancelled") return true
+  const start = event.start?.dateTime
+  // An all-day or unreadable start tells us nothing: treat the id as still in use.
+  if (!start) return false
+  const slotStart = localDateTime(booking.date, booking.time, booking.timeZone)
+  return new Date(start).getTime() !== new Date(slotStart).getTime()
+}
+
 export async function createCalendarEvent(
   calendarId: string,
   booking: Booking,
@@ -187,15 +213,30 @@ export async function createCalendarEvent(
   const endM = totalMin % 60
   const endDateTime = `${booking.date}T${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}:00`
 
-  await cal.events.insert({
-    calendarId,
-    requestBody: {
-      id: eventId,
-      summary: `✂️ ${booking.clientName} - ${booking.barberName} (${booking.serviceName})`,
-      description: `Name: ${booking.clientName}\nEmail: ${booking.clientEmail}\nPhone: ${booking.clientPhone}\nService: ${booking.serviceName}`,
-      location: CONTACT.address,
-      start: { dateTime: startDateTime, timeZone: booking.timeZone },
-      end: { dateTime: endDateTime, timeZone: booking.timeZone },
-    },
-  })
+  const requestBody = {
+    id: eventId,
+    summary: `✂️ ${booking.clientName} - ${booking.barberName} (${booking.serviceName})`,
+    description: `Name: ${booking.clientName}\nEmail: ${booking.clientEmail}\nPhone: ${booking.clientPhone}\nService: ${booking.serviceName}`,
+    location: CONTACT.address,
+    start: { dateTime: startDateTime, timeZone: booking.timeZone },
+    end: { dateTime: endDateTime, timeZone: booking.timeZone },
+  }
+
+  try {
+    await cal.events.insert({ calendarId, requestBody })
+  } catch (e) {
+    if (errorStatus(e) !== 409) throw e
+    // ponytail: Google never releases an event id. A cancelled appointment leaves a "cancelled"
+    // tombstone on it, and an appointment dragged to another time carries the id of the hour it
+    // left — either way the id squats on an hour free/busy reports as free, so /api/book answered
+    // "ya fue reservado" for a genuinely bookable slot. Retry with a fresh id only when the id
+    // really stopped holding this hour; a live event still sitting here is a true duplicate and
+    // must keep raising the 409 that prevents double-booking.
+    const existing = await cal.events.get({ calendarId, eventId }).catch(() => null)
+    if (!existing || !idLeftThisSlot(existing.data, booking)) throw e
+    await cal.events.insert({
+      calendarId,
+      requestBody: { ...requestBody, id: `${eventId}${randomBytes(4).toString("hex")}` },
+    })
+  }
 }
