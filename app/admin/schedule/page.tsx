@@ -116,12 +116,12 @@ export default function AdminSchedulePage() {
       </div>
 
       <div className="mb-3 mt-8 font-mono text-xs uppercase tracking-[0.16em] text-tertiary">Barbero</div>
-      <div className="mb-8 grid grid-cols-3 gap-2 sm:max-w-md">
+      <div className="mb-8 flex flex-wrap gap-2 sm:max-w-md">
         {BARBERS.map((b) => (
           <button
             key={b.id}
             onClick={() => setBarberId(b.id)}
-            className={`rounded-ctl border px-4 py-3 font-mono text-xs uppercase tracking-[0.12em] transition-colors ${
+            className={`flex-1 rounded-ctl border px-4 py-3 font-mono text-xs uppercase tracking-[0.12em] transition-colors ${
               b.id === barberId ? "border-accent text-accent" : "border-border hover:border-cream"
             }`}
           >

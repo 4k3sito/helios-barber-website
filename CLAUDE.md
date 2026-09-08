@@ -40,7 +40,7 @@ Barber config exists in two places with different shapes:
 - **`lib/config.ts`** — Public data consumed by UI components (fields: `id`, `name`, `role`, `desc`, `photo`). This is the source of truth for what users see.
 - **`lib/barbers.ts`** — Backend data consumed by API routes (fields: `id`, `name`, `title`, `calendarId`). Loads calendar IDs from `GCAL_*_ID` env vars.
 
-Both describe the same 3 barbers (Fabian, Alexis, Less). Keep them in sync when adding/removing barbers.
+Both describe the same barbers (currently Fabian and Alexis). Keep them in sync when adding/removing barbers. The team grids in `components/BarberosSection.tsx` and `app/admin/schedule/page.tsx` size themselves from the array, so they need no edit.
 
 ### Env vars (`.env.local`)
 
@@ -48,7 +48,7 @@ Both describe the same 3 barbers (Fabian, Alexis, Less). Keep them in sync when 
 |-----|---------|
 | `GCAL_CLIENT_EMAIL` | Service account email |
 | `GCAL_PRIVATE_KEY_BASE64` | Base64-encoded RSA private key (avoids multi-line PEM issues) |
-| `GCAL_FABIAN_ID`, `GCAL_ALEXIS_ID`, `GCAL_LESS_ID` | Google Calendar IDs per barber |
+| `GCAL_FABIAN_ID`, `GCAL_ALEXIS_ID` | Google Calendar IDs per barber (one `GCAL_<NAME>_ID` per entry in `lib/barbers.ts`) |
 | `ADMIN_PASSWORD` | Shared password gating `/admin/schedule` (owner-only schedule editor) |
 | `SUPABASE_URL`, `SUPABASE_API_KEY` | Supabase project URL + service_role key (server-only, bypasses RLS — never the anon key). Must also be set in hPanel's Node.js App env vars, since `.env.local` isn't deployed (deploy is GitHub push → Hostinger auto-redeploy) |
 

@@ -33,17 +33,6 @@ export const BARBERS: Barber[] = [
     hours: { start: "10:00", end: "19:00" },
     slotDurationMin: 30,
   },
-  {
-    id: "less",
-    name: "Less",
-    role: "Tijera & Rizos",
-    photo: "/uploads/Less.jpeg",
-    desc: "Especialista en cortes a tijera y rizos.",
-    calendarId: process.env.GCAL_LESS_ID || "primary",
-    timeZone: "America/Mexico_City",
-    hours: { start: "09:00", end: "17:00" },
-    slotDurationMin: 30,
-  },
 ];
 
 export interface Service {
