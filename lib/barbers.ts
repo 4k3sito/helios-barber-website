@@ -41,3 +41,6 @@ export const barbers: Barber[] = [
     slotDurationMin: 30,
   },
 ]
+
+// Owner's calendar — every booking is mirrored here too, so one calendar shows all barbers' schedules.
+export const OWNER_CALENDAR_ID = process.env.GCAL_OWNER_ID || "leitoramlo55@gmail.com"

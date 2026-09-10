@@ -7,12 +7,12 @@
 3. Create a service account:
    - IAM & Admin → Service Accounts → Create Service Account
    - Download the JSON key
-4. For each barber's Google Calendar:
+4. For each barber's Google Calendar **and the owner's**:
    - Open the calendar settings → Share with specific people
-   - Add the service account email (from the JSON key), permission "Make changes to events"
-   - Add the owner's address (`leitoramlo55@gmail.com`), permission "Make changes to events" — the
-     owner then adds the three calendars to his own Google Calendar and sees every barber in one
-     view. There is one event per booking, so deleting it anywhere frees the slot on the site.
+   - Add the service account email (from the JSON key)
+   - Permission: "Make changes to events"
+   - (Every booking is created on the barber's calendar and mirrored onto the owner's, so the
+     owner sees all barbers' schedules in one place — this requires his calendar to be shared too.)
 5. For booking confirmation emails, use any SMTP mailbox (e.g. Hostinger's `no-reply@heliosbarber.com`
    from hPanel → Emails) — host/port/user/pass go in `SMTP_*` env vars, see below.
 

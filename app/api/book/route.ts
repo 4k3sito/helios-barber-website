@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { barbers } from "@/lib/barbers"
+import { barbers, OWNER_CALENDAR_ID } from "@/lib/barbers"
 import { createCalendarEvent, generateSlots, getBusySlots } from "@/lib/google-calendar"
 import { sendBookingConfirmation } from "@/lib/email"
 import { LEAD_TIME_HOURS, ALL_SERVICES } from "@/lib/config"
@@ -141,6 +141,14 @@ export async function POST(req: Request) {
         client_phone: clientPhone || null,
       })
       if (insertError) console.error("Appointment DB insert failed:", insertError.message)
+
+      // ponytail: mirror onto the owner's calendar so one place shows every barber's schedule;
+      // don't fail the booking if the owner hasn't shared his calendar with the service account yet
+      try {
+        await createCalendarEvent(OWNER_CALENDAR_ID, eventDetails)
+      } catch (e) {
+        console.error("Owner calendar mirror failed:", e instanceof Error ? e.message : e)
+      }
 
       // ponytail: the booking already succeeded via Calendar; don't fail the request if the email hiccups
       try {
