@@ -30,4 +30,14 @@ export const barbers: Barber[] = [
     hours: { start: "10:00", end: "19:00" },
     slotDurationMin: 30,
   },
+  {
+    id: "marlon",
+    name: "Marlon",
+    title: "Tijera & Navaja",
+    photo: "/uploads/Marlon.jpeg",
+    calendarId: process.env.GCAL_MARLON_ID || "marlonblack1205@gmail.com",
+    timeZone: "America/Mexico_City",
+    hours: { start: "10:00", end: "19:00" },
+    slotDurationMin: 30,
+  },
 ]

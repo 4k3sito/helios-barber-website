@@ -33,6 +33,17 @@ export const BARBERS: Barber[] = [
     hours: { start: "10:00", end: "19:00" },
     slotDurationMin: 30,
   },
+  {
+    id: "marlon",
+    name: "Marlon",
+    role: "Tijera & Navaja",
+    photo: "/uploads/Marlon.jpeg",
+    desc: "Especialista en técnicas de tijera y navaja para creación de texturas y acabados de precisión.",
+    calendarId: process.env.GCAL_MARLON_ID || "primary",
+    timeZone: "America/Mexico_City",
+    hours: { start: "10:00", end: "19:00" },
+    slotDurationMin: 30,
+  },
 ];
 
 export interface Service {
