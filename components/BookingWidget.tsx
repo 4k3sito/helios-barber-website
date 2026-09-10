@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { BARBERS, BARBERIA_SERVICES, type Barber, type Service } from "@/lib/config";
 
+const BOOKABLE_BARBERS = BARBERS.filter((b) => b.bookable !== false);
+
 // ponytail: local date, not toISOString() (UTC) — UTC rolls over at 6pm in Mexico City,
 // which would make the picker think "today" is already tomorrow in the evening.
 const today = () => {
@@ -139,7 +141,7 @@ export default function BookingWidget() {
         {/* STEP 1 — Barber */}
         {step === 1 && (
           <div className="grid gap-3 sm:grid-cols-2">
-            {BARBERS.map((b, i) => (
+            {BOOKABLE_BARBERS.map((b, i) => (
               <button
                 key={b.id}
                 onClick={() => pickBarber(b)}

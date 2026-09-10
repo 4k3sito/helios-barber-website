@@ -8,6 +8,8 @@ export interface Barber {
   timeZone: string;
   hours: { start: string; end: string };
   slotDurationMin: number;
+  /** Shown on the team grid but not offered in the booking widget. Omit to mean bookable. */
+  bookable?: boolean;
 }
 
 export const BARBERS: Barber[] = [
@@ -37,6 +39,9 @@ export const BARBERS: Barber[] = [
     id: "marlon",
     name: "Marlon",
     role: "Tijera & Navaja",
+    // ponytail: off until he shares his calendar with the service account; drop this line then.
+    // Also keep him out of lib/barbers.ts while it is false — that array is the server-side gate.
+    bookable: false,
     photo: "/uploads/Marlon.jpeg",
     desc: "Especialista en técnicas de tijera y navaja para creación de texturas y acabados de precisión.",
     calendarId: process.env.GCAL_MARLON_ID || "primary",
