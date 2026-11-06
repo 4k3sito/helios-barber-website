@@ -3,8 +3,31 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { BARBERS, BARBERIA_SERVICES, type Barber, type Service } from "@/lib/config";
+import { addDays, leastBooked, mergeSlots, type SlotOption } from "@/lib/availability";
 
 const BOOKABLE_BARBERS = BARBERS.filter((b) => b.bookable !== false);
+const barberById = (id: string) => BOOKABLE_BARBERS.find((b) => b.id === id)!;
+const SEARCH_DAYS = 14;
+const SEARCH_BATCH = 7; // days fetched in parallel per round: 2 rounds max instead of 14 sequential
+
+type Choice = Barber | "any";
+const targetsFor = (choice: Choice) => (choice === "any" ? BOOKABLE_BARBERS : [choice]);
+
+// ponytail: one /api/slots call per barber in parallel; a single multi-calendar freebusy route if this gets slow
+async function fetchDay(targets: Barber[], date: string, serviceId: string): Promise<SlotOption[]> {
+  const results = await Promise.allSettled(
+    targets.map(async (b) => {
+      const r = await fetch(`/api/slots?barberId=${b.id}&date=${date}&serviceId=${serviceId}`);
+      if (!r.ok) throw new Error(`slots ${r.status}`);
+      const d: { slots?: string[] } = await r.json();
+      return { barberId: b.id, slots: d.slots ?? [] };
+    })
+  );
+  const ok = results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
+  // One barber's calendar hiccuping shouldn't hide everyone else's hours
+  if (ok.length === 0) throw new Error("No availability could be loaded");
+  return mergeSlots(ok);
+}
 
 // ponytail: local date, not toISOString() (UTC) — UTC rolls over at 6pm in Mexico City,
 // which would make the picker think "today" is already tomorrow in the evening.
@@ -32,35 +55,71 @@ function fmtDate(d: string) {
 
 export default function BookingWidget() {
   const [step, setStep] = useState(1);
+  const [choice, setChoice] = useState<Choice | null>(null);
+  // The barber the booking goes to: the chosen one, or the one assigned from "any" at slot pick
   const [barber, setBarber] = useState<Barber | null>(null);
   const [service, setService] = useState<Service | null>(null);
   const [date, setDate] = useState(today());
-  const [slots, setSlots] = useState<string[]>([]);
+  const [options, setOptions] = useState<SlotOption[]>([]);
   const [slotsStatus, setSlotsStatus] = useState<Status>("idle");
   const [slot, setSlot] = useState<string | null>(null);
+  const [pending, setPending] = useState<SlotOption | null>(null);
+  const [search, setSearch] = useState<"idle" | "searching" | "none" | "error">("idle");
+  const searchRun = useRef(0);
+  const chooserHeading = useRef<HTMLParagraphElement>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [submit, setSubmit] = useState<Status>("idle");
   const [error, setError] = useState("");
   const [availabilityError, setAvailabilityError] = useState("");
 
   useEffect(() => {
-    if (step !== 3 || !barber || !service) return;
+    searchRun.current++; // any change of step, date or choice cancels a running "next day" search
+    if (step !== 3 || !choice || !service) return;
     let active = true;
+    setSearch("idle");
     setSlotsStatus("loading");
     setSlot(null);
-    fetch(`/api/slots?barberId=${barber.id}&date=${date}&serviceId=${service.id}`)
-      .then((r) => r.json())
-      .then((d) => {
+    setPending(null);
+    fetchDay(targetsFor(choice), date, service.id)
+      .then((o) => {
         if (!active) return;
-        setSlots(d.slots ?? []);
+        setOptions(o);
         setSlotsStatus("idle");
       })
       .catch(() => active && setSlotsStatus("error"));
     return () => { active = false; };
-  }, [step, barber, service, date]);
+  }, [step, choice, service, date]);
 
-  function pickBarber(b: Barber) {
-    setBarber(b);
+  useEffect(() => {
+    if (pending) chooserHeading.current?.focus();
+  }, [pending]);
+
+  async function findNextDay() {
+    if (!choice || !service) return;
+    const run = ++searchRun.current;
+    setSearch("searching");
+    try {
+      for (let start = 1; start <= SEARCH_DAYS; start += SEARCH_BATCH) {
+        const days = Array.from({ length: Math.min(SEARCH_BATCH, SEARCH_DAYS - start + 1) }, (_, i) => addDays(date, start + i));
+        const results = await Promise.all(days.map((d) => fetchDay(targetsFor(choice), d, service.id)));
+        if (run !== searchRun.current) return;
+        const hit = results.findIndex((o) => o.length > 0);
+        if (hit >= 0) {
+          setAvailabilityError("");
+          setDate(days[hit]); // the effect reloads that day, fresh
+          return;
+        }
+      }
+      setSearch("none");
+    } catch {
+      // A failed lookup is not an empty day: stop instead of claiming two weeks are full
+      if (run === searchRun.current) setSearch("error");
+    }
+  }
+
+  function pickBarber(c: Choice) {
+    setChoice(c);
+    setBarber(c === "any" ? null : c);
     setStep(2);
   }
 
@@ -70,9 +129,19 @@ export default function BookingWidget() {
     setStep(3);
   }
 
-  function pickSlot(s: string) {
+  function pickSlot(o: SlotOption) {
     setAvailabilityError("");
-    setSlot(s);
+    if (o.barberIds.length > 1) {
+      setPending(o);
+      return;
+    }
+    confirmSlot(o.time, o.barberIds[0]);
+  }
+
+  function confirmSlot(time: string, barberId: string) {
+    setBarber(barberById(barberId));
+    setSlot(time);
+    setPending(null);
     setStep(4);
   }
 
@@ -141,6 +210,22 @@ export default function BookingWidget() {
         {/* STEP 1 — Barber */}
         {step === 1 && (
           <div className="grid gap-3 sm:grid-cols-2">
+            {BOOKABLE_BARBERS.length > 1 && (
+              <button
+                onClick={() => pickBarber("any")}
+                className="flex items-center gap-4 rounded-ctl border border-accent/60 bg-accent/[0.06] p-4 text-left transition-colors duration-200 hover:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent sm:col-span-2"
+              >
+                <span className="flex shrink-0 -space-x-3">
+                  {BOOKABLE_BARBERS.map((b) => (
+                    <Image key={b.id} src={b.photo} alt="" width={44} height={44} className="size-11 rounded-full object-cover ring-2 ring-surface" />
+                  ))}
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-display text-lg font-bold tracking-[-0.01em]">Cualquier barbero</span>
+                  <span className="mt-0.5 block font-mono text-xs uppercase tracking-[0.12em] text-accent">Ver todos los horarios juntos</span>
+                </span>
+              </button>
+            )}
             {BOOKABLE_BARBERS.map((b, i) => (
               <button
                 key={b.id}
@@ -180,31 +265,84 @@ export default function BookingWidget() {
               type="date"
               min={today()}
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => { setAvailabilityError(""); setDate(e.target.value); }}
               className="w-full max-w-sm rounded-ctl border border-border bg-ink px-4 py-3 font-mono text-body [color-scheme:dark] focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             />
 
             <p className="mb-3 mt-6 font-mono text-xs uppercase tracking-[0.14em] text-tertiary">
-              Horarios para <span className="text-accent">{barber?.name}</span> · {service?.name} · {fmtDate(date)}
+              Horarios para <span className="text-accent">{choice === "any" ? "todos los barberos" : barber?.name}</span> · {service?.name} · {fmtDate(date)}
             </p>
             {availabilityError && <p role="alert" className="mb-3 font-mono text-sm text-accent">{availabilityError}</p>}
             {slotsStatus === "loading" && <SlotSkeleton />}
             {slotsStatus === "error" && <p className="font-mono text-sm text-accent">No se pudo cargar. Intenta de nuevo.</p>}
-            {slotsStatus === "idle" && slots.length === 0 && <p className="text-secondary">Sin horarios libres este día. Prueba otra fecha.</p>}
-            {slotsStatus === "idle" && slots.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {slots.map((s) => (
+            {slotsStatus === "idle" && options.length === 0 && (
+              <div aria-live="polite" aria-busy={search === "searching"}>
+                <p className="text-secondary">
+                  {search === "none" ? `Sin horarios libres en los próximos ${SEARCH_DAYS} días.` : "Sin horarios libres este día."}
+                </p>
+                {search === "error" && <p role="alert" className="mt-2 font-mono text-sm text-accent">No se pudo buscar. Intenta de nuevo.</p>}
+                {search !== "none" && (
                   <button
-                    key={s}
-                    onClick={() => pickSlot(s)}
-                    className="rounded-ctl border border-border py-3 font-mono text-sm tabular-nums transition-colors duration-200 hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent min-h-[44px]"
+                    onClick={findNextDay}
+                    disabled={search === "searching"}
+                    className="mt-4 rounded-ctl bg-accent px-6 py-3 font-mono text-xs uppercase tracking-[0.14em] text-ink transition-opacity hover:opacity-82 disabled:opacity-50 min-h-[44px]"
                   >
-                    {s}
+                    {search === "searching" ? "Buscando…" : "Siguiente día con horarios →"}
+                  </button>
+                )}
+              </div>
+            )}
+            {slotsStatus === "idle" && pending && (
+              <div>
+                <p ref={chooserHeading} tabIndex={-1} className="mb-3 font-mono text-xs uppercase tracking-[0.14em] text-tertiary outline-none">
+                  ¿Con quién a las <span className="text-accent">{pending.time}</span>?
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {pending.barberIds.map((id) => {
+                    const b = barberById(id);
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => confirmSlot(pending.time, id)}
+                        className="flex items-center gap-3 rounded-ctl border border-border p-3 text-left transition-colors duration-200 hover:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent min-h-[44px]"
+                      >
+                        <Image src={b.photo} alt="" width={48} height={48} className="size-12 rounded-ctl object-cover" />
+                        <span className="min-w-0">
+                          <span className="block font-display text-base font-bold">{b.name}</span>
+                          <span className="block font-mono text-xs uppercase tracking-[0.12em] text-accent">{b.role}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => confirmSlot(pending.time, leastBooked(pending, options))}
+                    className="rounded-ctl border border-accent/60 p-3 font-mono text-xs uppercase tracking-[0.14em] text-accent transition-colors duration-200 hover:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent min-h-[44px] sm:col-span-2"
+                  >
+                    Me da igual
+                  </button>
+                </div>
+              </div>
+            )}
+            {slotsStatus === "idle" && options.length > 0 && !pending && (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {options.map((o) => (
+                  <button
+                    key={o.time}
+                    onClick={() => pickSlot(o)}
+                    aria-label={choice === "any" ? `${o.time}, libre: ${o.barberIds.map((id) => barberById(id).name).join(", ")}` : undefined}
+                    className="flex flex-col items-center gap-1.5 rounded-ctl border border-border py-3 font-mono text-sm tabular-nums transition-colors duration-200 hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent min-h-[44px]"
+                  >
+                    {o.time}
+                    {choice === "any" && (
+                      <span className="text-[10px] uppercase tracking-[0.12em] text-tertiary" aria-hidden>
+                        {o.barberIds.length === 1 ? barberById(o.barberIds[0]).name : `${o.barberIds.length} libres`}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             )}
-            <Nav onBack={() => setStep(2)} />
+            <Nav onBack={() => (pending ? setPending(null) : setStep(2))} />
           </div>
         )}
 
@@ -240,7 +378,7 @@ export default function BookingWidget() {
               Te esperamos {fmtDate(date)} a las {slot} con {barber?.name} para tu {service?.name}.
             </p>
             <button
-              onClick={() => { setStep(1); setBarber(null); setService(null); setSlot(null); setSubmit("idle"); setForm({ name: "", phone: "", email: "" }); }}
+              onClick={() => { setStep(1); setChoice(null); setBarber(null); setService(null); setSlot(null); setSubmit("idle"); setForm({ name: "", phone: "", email: "" }); }}
               className="mt-[26px] rounded-ctl border border-border px-6 py-3 font-mono text-xs uppercase tracking-[0.14em] transition-colors hover:border-cream min-h-[44px]"
             >
               Agendar otra

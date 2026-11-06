@@ -38,12 +38,20 @@ export default function Hero() {
           <p className="m-0 mt-5 max-w-[46ch] font-body text-[clamp(14px,1.15vw,16px)] leading-[1.65] text-secondary hero-sub">
             Precisión técnica y experiencia premium para el hombre que entiende la imagen como identidad.
           </p>
-          <a
-            href="#servicios"
-            className="mt-[30px] inline-flex items-center gap-2.5 rounded-ctl bg-accent px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink transition-opacity hover:opacity-82"
-          >
-            Ver servicios ↓
-          </a>
+          <div className="mt-[30px] flex flex-wrap gap-3">
+            <a
+              href="#agendar"
+              className="inline-flex items-center gap-2.5 rounded-ctl bg-accent px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink transition-opacity hover:opacity-82"
+            >
+              Reservar cita →
+            </a>
+            <a
+              href="#servicios"
+              className="inline-flex items-center gap-2.5 rounded-ctl border border-cream/40 px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition-colors hover:border-cream"
+            >
+              Ver servicios ↓
+            </a>
+          </div>
         </div>
       </div>
     </header>

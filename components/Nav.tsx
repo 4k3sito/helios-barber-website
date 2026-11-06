@@ -32,9 +32,9 @@ export default function Nav() {
       >
         <a href="#top" className="flex items-center gap-3">
           <Image src="/assets/sun-light.png" alt="Helios" width={34} height={34} className="size-[34px]" />
-          <span className="font-display text-lg font-bold tracking-[0.32em] pl-[0.32em]">HELIOS</span>
+          <span className="font-display text-lg font-bold tracking-[0.32em] pl-[0.32em] max-[359px]:hidden">HELIOS</span>
         </a>
-        <div className="flex items-center gap-[38px]">
+        <div className="flex items-center gap-4 lg:gap-[38px]">
           <div className="hidden items-center gap-[34px] font-mono text-xs uppercase tracking-[0.16em] text-secondary lg:flex">
             {links.map((l) => (
               <a key={l.href} href={l.href} className="transition-colors duration-250 hover:text-accent">
@@ -44,7 +44,7 @@ export default function Nav() {
           </div>
           <a
             href="#agendar"
-            className="hidden rounded-ctl bg-accent px-5 py-3 font-mono text-xs uppercase tracking-[0.14em] text-ink transition-opacity hover:opacity-82 lg:inline-block"
+            className="inline-flex min-h-[44px] items-center rounded-ctl bg-accent px-3.5 font-mono text-[11px] uppercase tracking-[0.14em] text-ink transition-opacity hover:opacity-82 lg:px-5 lg:text-xs"
           >
             Reservar
           </a>

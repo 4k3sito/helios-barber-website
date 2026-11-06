@@ -86,7 +86,13 @@ export async function getBusySlots(
     },
   })
 
-  return (res.data.calendars?.[calendarId]?.busy || []).map((b) => ({
+  const entry = res.data.calendars?.[calendarId]
+  // freebusy answers an unreadable calendar (unshared, wrong id) with an errors block and no busy
+  // ranges; reading that as "nothing booked" offered a whole free day that then failed at booking
+  if (entry?.errors?.length) {
+    throw new Error(`freebusy ${calendarId}: ${entry.errors.map((e) => e.reason).join(", ")}`)
+  }
+  return (entry?.busy || []).map((b) => ({
     start: b.start || "",
     end: b.end || "",
   }))
