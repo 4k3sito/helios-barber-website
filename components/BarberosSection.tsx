@@ -29,7 +29,8 @@ export default function BarberosSection() {
                 0{i + 1}
               </span>
             </div>
-            <div className="mt-5 flex items-baseline justify-between gap-2.5">
+            {/* wrap: 4 cards side by side at md are too narrow for name + role on one line */}
+            <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-2.5 gap-y-1">
               <h3 className="m-0 font-display text-[clamp(24px,2.4vw,32px)] font-bold tracking-[-0.02em]">
                 {b.name}
               </h3>

@@ -46,6 +46,17 @@ export const BARBERS: Barber[] = [
     hours: { start: "10:00", end: "19:00" },
     slotDurationMin: 30,
   },
+  {
+    id: "roger",
+    name: "Roger",
+    role: "Precisión & Estilo",
+    photo: "/uploads/Roger.jpeg",
+    desc: "Dominio excepcional del corte a tijera, texturas, desvanecidos y diseño de barba. Técnica, versatilidad y precisión para resultados impecables.",
+    calendarId: process.env.GCAL_ROGER_ID || "primary",
+    timeZone: "America/Mexico_City",
+    hours: { start: "10:00", end: "19:00" },
+    slotDurationMin: 30,
+  },
 ];
 
 export interface Service {

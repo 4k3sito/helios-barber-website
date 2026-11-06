@@ -40,6 +40,16 @@ export const barbers: Barber[] = [
     hours: { start: "10:00", end: "19:00" },
     slotDurationMin: 30,
   },
+  {
+    id: "roger",
+    name: "Roger",
+    title: "Precisión & Estilo",
+    photo: "/uploads/Roger.jpeg",
+    calendarId: process.env.GCAL_ROGER_ID || "jsbarberjsbarber@gmail.com",
+    timeZone: "America/Mexico_City",
+    hours: { start: "10:00", end: "19:00" },
+    slotDurationMin: 30,
+  },
 ]
 
 // Owner's calendar — every booking is mirrored here too, so one calendar shows all barbers' schedules.
