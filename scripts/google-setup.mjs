@@ -221,11 +221,8 @@ async function gtm(measurementIdArg) {
 
 async function gsc() {
   const site = { type: "SITE", identifier: SITE_URL }
-  const { data: token } = await siteVerification.webResource.getToken({
-    requestBody: { verificationMethod: "TAG_MANAGER", site },
-  })
-  console.log(`Token (método TAG_MANAGER): ${token.token ?? "(n/a)"}`)
-
+  // TAG_MANAGER no usa token: Google revisa que el snippet GTM esté en el sitio y que
+  // quien verifica tenga permiso de Publicar en ese contenedor.
   const { data: res } = await siteVerification.webResource.insert({
     verificationMethod: "TAG_MANAGER",
     requestBody: { site },
