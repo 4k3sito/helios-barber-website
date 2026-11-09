@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { CONTACT } from "@/lib/config";
 
-export const metadata = { title: "Aviso de privacidad · Helios Barber" };
+export const metadata = {
+  title: "Aviso de privacidad",
+  alternates: { canonical: "/privacidad" },
+};
 
 export default function Privacidad() {
   return (

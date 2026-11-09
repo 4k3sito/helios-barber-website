@@ -53,11 +53,11 @@ export default function Footer() {
             <Image src="/assets/sun-light.png" alt="Helios" width={40} height={40} className="size-10" />
             <div>
               <div className="font-display text-lg font-bold tracking-[0.3em] pl-[0.3em]">HELIOS</div>
-              <div className="mt-1 font-mono text-xs uppercase tracking-[0.18em] text-tertiary">Barber Studio</div>
+              <div className="mt-1 font-mono text-xs uppercase tracking-[0.18em] text-tertiary">Barbershop</div>
             </div>
           </div>
           <div className="text-right font-mono text-xs uppercase tracking-[0.12em] text-tertiary">
-            © 2026 Helios Barber Studio<br />
+            © 2026 Helios Barbershop<br />
             Transformamos imagen en presencia
           </div>
         </div>

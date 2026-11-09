@@ -18,16 +18,35 @@ const body = Lora({
   variable: "--font-body",
 });
 
-const title = "Helios Barber · Premium Grooming en CDMX";
+// "barbería" + colonia en el título: es lo que la gente busca ("barbería nápoles", "barbería cerca de mí").
+const title = "Barbería en Nápoles, CDMX · Helios Barbershop";
 const description =
-  "Barbería premium en Nápoles, Benito Juárez, Ciudad de México. Cortes, barba y afeitado tradicional. Agenda tu cita en línea.";
+  "Barbería premium en Nápoles, Benito Juárez (a pasos del WTC). Corte de cabello, fade, diseño de barba y ceja desde $150 MXN. Agenda tu cita en línea en 1 minuto.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://heliosbarber.com"),
-  title,
+  title: { default: title, template: "%s · Helios Barbershop" },
   description,
-  openGraph: { title, description, type: "website", locale: "es_MX" },
+  keywords: [
+    "barbería Nápoles",
+    "barbería Benito Juárez",
+    "barbería CDMX",
+    "barbería cerca del WTC",
+    "corte de cabello hombre",
+    "fade",
+    "diseño de barba",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    title,
+    description,
+    url: "/",
+    siteName: "Helios Barbershop",
+    type: "website",
+    locale: "es_MX",
+  },
   twitter: { card: "summary_large_image", title, description },
+  robots: { index: true, follow: true, "max-image-preview": "large" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

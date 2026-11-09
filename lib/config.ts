@@ -86,8 +86,9 @@ export const CONTACT = {
   instagramDisplay: "@helios_barber",
   tiktok: "https://tiktok.com/@helios.barber.stu",
   tiktokDisplay: "@helios.barber.stu",
-  address: "Dakota 95, Nápoles, Benito Juárez, Ciudad de México",
-  addressUrl: "https://maps.google.com/?q=Dakota+95,+Napoles,+Benito+Juarez,+Ciudad+de+Mexico",
+  address: "Dakota 95, Local 15, 2.º piso, Nápoles, Benito Juárez, Ciudad de México",
+  // Search by name + street so Maps opens the Google Business listing, not just the street pin.
+  addressUrl: "https://www.google.com/maps/search/?api=1&query=Helios+Barbershop+Dakota+95+Napoles+Ciudad+de+Mexico",
 };
 
 // ponytail: 0 disables the cutoff — owner books last-minute walk-ins himself, don't block him

@@ -24,7 +24,7 @@ export default function BarberosSection() {
         {BARBERS.map((b, i) => (
           <div key={b.id} data-barber-card className="md:min-w-0 md:flex-1">
             <div className="relative aspect-[3/4] overflow-hidden rounded-card">
-              <Image src={b.photo} alt={b.name} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
+              <Image src={b.photo} alt={`${b.name}, barbero en Helios Barbershop`} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
               <span className="absolute left-3 top-3 rounded-ctl bg-ink/55 px-[9px] py-[5px] font-mono text-xs uppercase tracking-[0.18em] text-accent backdrop-blur-sm">
                 0{i + 1}
               </span>

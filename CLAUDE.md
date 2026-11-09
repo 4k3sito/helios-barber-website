@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-**Next.js 14 App Router** single-page site for Helios Barber Studio (Ciudad de México, MX). Availability is computed in-memory from Google Calendar free/busy queries — Calendar remains the source of truth for bookings. A Supabase (Postgres) database (`lib/db.ts`) stores schedule overrides and a record copy of each appointment; see `schema.sql`. No state management library, just React hooks.
+**Next.js 14 App Router** single-page site for Helios Barbershop (Ciudad de México, MX). Availability is computed in-memory from Google Calendar free/busy queries — Calendar remains the source of truth for bookings. A Supabase (Postgres) database (`lib/db.ts`) stores schedule overrides and a record copy of each appointment; see `schema.sql`. No state management library, just React hooks.
 
 ### Key directories
 

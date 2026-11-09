@@ -1,4 +1,7 @@
 import Image from "next/image";
+import { BARBERS, BARBERIA_SERVICES } from "@/lib/config";
+
+const pad = (n: number) => String(n).padStart(2, "0");
 
 export default function StudioSection() {
   return (
@@ -20,8 +23,8 @@ export default function StudioSection() {
           </p>
           <div className="mt-12 flex flex-wrap gap-12">
             {[
-              { n: "03", label: "Barberos expertos" },
-              { n: "09", label: "Servicios de estudio" },
+              { n: pad(BARBERS.length), label: "Barberos expertos" },
+              { n: pad(BARBERIA_SERVICES.length), label: "Servicios de estudio" },
               { n: "100%", label: "Cita personalizada" },
             ].map((s) => (
               <div key={s.n}>
@@ -38,7 +41,7 @@ export default function StudioSection() {
         <div className="relative">
           <Image
             src="/uploads/1.jpeg"
-            alt="Interior del estudio"
+            alt="Estaciones de corte en Helios Barbershop, Nápoles"
             width={600}
             height={750}
             className="w-full rounded-card object-cover aspect-[4/5]"

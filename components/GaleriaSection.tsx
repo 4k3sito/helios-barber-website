@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 const IMAGES = [
-  { src: "/uploads/6.jpeg", alt: "Vista general del interior de Helios Barber Studio", className: "row-span-2 h-full w-full rounded-card object-cover aspect-[3/4]", w: 400, h: 600 },
+  { src: "/uploads/6.jpeg", alt: "Vista general del interior de Helios Barbershop", className: "row-span-2 h-full w-full rounded-card object-cover aspect-[3/4]", w: 400, h: 600 },
   { src: "/uploads/2.jpeg", alt: "Estación de barbería con espejo e iluminación cálida", className: "w-full rounded-card object-cover aspect-[3/4]", w: 400, h: 400 },
   { src: "/uploads/8.jpeg", alt: "Sillón de barbería vintage en el estudio", className: "w-full rounded-card object-cover aspect-[3/4]", w: 400, h: 400 },
   { src: "/uploads/7.jpeg", alt: "Detalle del área de lavado y styling", className: "row-span-2 h-full w-full rounded-card object-cover aspect-[3/4]", w: 400, h: 600 },

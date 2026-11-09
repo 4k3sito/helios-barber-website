@@ -6,8 +6,10 @@ import ServicesSection from "@/components/ServicesSection";
 import BarberosSection from "@/components/BarberosSection";
 import GaleriaSection from "@/components/GaleriaSection";
 import BookingWidget from "@/components/BookingWidget";
+import FaqSection from "@/components/FaqSection";
 import Footer from "@/components/Footer";
 import Animations from "@/components/Animations";
+import StructuredData from "@/components/StructuredData";
 
 // ponytail: without this Next stamps static pages with `s-maxage=31536000`, and Hostinger's CDN
 // honoured it — a deploy on 2026-09-07 was still serving the page built on 2026-09-02 (age 4.6d),
@@ -18,6 +20,7 @@ export const revalidate = 3600
 export default function Home() {
   return (
     <div className="overflow-x-hidden bg-ink">
+      <StructuredData />
       <Animations />
       <Nav />
       <Hero />
@@ -27,6 +30,7 @@ export default function Home() {
       <BarberosSection />
       <GaleriaSection />
       <BookingWidget />
+      <FaqSection />
       <Footer />
     </div>
   );

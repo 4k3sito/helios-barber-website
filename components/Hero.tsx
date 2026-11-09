@@ -6,7 +6,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0">
         <Image
           src="/uploads/3.jpeg"
-          alt="Interior Helios"
+          alt="Interior de Helios Barbershop, barbería en Nápoles, CDMX"
           fill
           priority
           sizes="100vw"
@@ -20,9 +20,10 @@ export default function Hero() {
 
       {/* top row: kicker + index tag */}
       <div className="relative z-3 flex items-start justify-between gap-5 px-[clamp(38px,6vw,88px)] pt-[clamp(112px,14vh,164px)]">
-        <div className="font-mono text-[11px] uppercase leading-normal tracking-[0.26em] text-accent hero-kicker">
-          Est. 2026<br />Estudio de barbería &amp; peluquería
-        </div>
+        {/* The H1 carries the search keyword ("barbería en Nápoles"); the big statement below is the visual headline. */}
+        <h1 className="m-0 font-mono text-[11px] font-normal uppercase leading-normal tracking-[0.26em] text-accent hero-kicker">
+          Est. 2026<br />Barbería &amp; peluquería en Nápoles, CDMX
+        </h1>
         <div className="text-right font-mono text-[11px] uppercase leading-normal tracking-[0.2em] text-secondary">
           N.01 — Interior<br /><span className="text-tertiary">Nápoles, CDMX</span>
         </div>
@@ -32,9 +33,9 @@ export default function Hero() {
       <div className="relative z-3 mt-auto flex flex-wrap items-end justify-between gap-8 px-[clamp(38px,6vw,88px)] pb-[clamp(48px,6.5vw,80px)]">
         <div className="max-w-[56ch]">
           <div className="mb-[22px] h-px w-14 bg-accent" />
-          <h1 className="m-0 text-balance font-display text-[clamp(30px,4.4vw,58px)] font-bold leading-[1.14] tracking-[-0.025em] text-cream hero-title">
+          <p className="m-0 text-balance font-display text-[clamp(30px,4.4vw,58px)] font-bold leading-[1.14] tracking-[-0.025em] text-cream hero-title">
             Transformamos imagen en <em className="font-display italic font-extrabold text-accent-bright">presencia</em>.
-          </h1>
+          </p>
           <p className="m-0 mt-5 max-w-[46ch] font-body text-[clamp(14px,1.15vw,16px)] leading-[1.65] text-secondary hero-sub">
             Precisión técnica y experiencia premium para el hombre que entiende la imagen como identidad.
           </p>

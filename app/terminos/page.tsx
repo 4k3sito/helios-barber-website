@@ -1,6 +1,9 @@
 import Link from "next/link";
 
-export const metadata = { title: "Términos de servicio · Helios Barber" };
+export const metadata = {
+  title: "Términos de servicio",
+  alternates: { canonical: "/terminos" },
+};
 
 export default function Terminos() {
   return (

@@ -27,9 +27,9 @@ export async function sendBookingConfirmation(booking: BookingConfirmation) {
 
   const transport = getTransport()
   await transport.sendMail({
-    from: `Helios Barber Studio <${process.env.SMTP_USER}>`,
+    from: `Helios Barbershop <${process.env.SMTP_USER}>`,
     to: booking.clientEmail,
-    subject: "Confirmación de tu cita — Helios Barber Studio",
+    subject: "Confirmación de tu cita — Helios Barbershop",
     text: `Hola ${booking.clientName},
 
 Tu cita quedó confirmada:
@@ -41,6 +41,6 @@ Hora: ${booking.time}
 Ubicación: ${CONTACT.address}
 
 Te esperamos.
-Helios Barber Studio`,
+Helios Barbershop`,
   })
 }
