@@ -39,9 +39,10 @@ const STEPS = ["Barbero", "Servicio", "Fecha y hora", "Datos"];
 
 declare global {
   interface Window {
-    gtag?: (...args: unknown[]) => void;
+    dataLayer?: Record<string, unknown>[];
   }
 }
+
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -168,7 +169,9 @@ export default function BookingWidget() {
         throw new Error(data.error ?? "Error");
       }
       setSubmit("success");
-      window.gtag?.("event", "generate_lead", {
+      // GTM escucha este evento (trigger "CE - generate_lead"); window.gtag no existe con GTM
+      (window.dataLayer = window.dataLayer || []).push({
+        event: "generate_lead",
         value: Number(service.price.replace(/[^0-9.]/g, "")) || undefined,
         currency: "MXN",
         item_name: service.name,

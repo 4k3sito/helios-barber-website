@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Lora } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import Script from "next/script";
 import "./globals.css";
 
-const gaId = process.env.NEXT_PUBLIC_GA_ID;
-const gtmId = "GTM-MZCM4WKK";
+// GA4 (G-PJJZG5G8HF) se carga desde GTM con la etiqueta "Google tag - GA4"; no lo cargues aquí o se duplican visitas.
+const gtmId = "GTM-T76KNH8Z";
 
 const mono = JetBrains_Mono({
   subsets: ["latin"],
@@ -60,7 +59,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </a>
         {children}
       </body>
-      {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
   );
 }
