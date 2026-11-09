@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { mergeSlots, leastBooked, addDays } from "@/lib/availability"
+import { mergeSlots, pickAnyBarber, addDays } from "@/lib/availability"
 
 describe("mergeSlots", () => {
   it("unions every barber's slots in time order, keeping who is free at each", () => {
@@ -21,27 +21,25 @@ describe("mergeSlots", () => {
   })
 })
 
-describe("leastBooked", () => {
-  const day = mergeSlots([
-    { barberId: "fabian", slots: ["10:00"] },
-    { barberId: "alexis", slots: ["10:00", "11:00", "12:00"] },
-    { barberId: "marlon", slots: ["10:00", "11:00"] },
-  ])
+describe("pickAnyBarber", () => {
+  const option = { time: "10:00", barberIds: ["fabian", "alexis", "marlon", "roger"] }
 
-  it("picks the free barber with the most open slots that day", () => {
-    expect(leastBooked(day[0], day)).toBe("alexis")
+  it("only ever picks a barber free at that time, across the whole random range", () => {
+    expect(pickAnyBarber(option, () => 0)).toBe("fabian")
+    expect(pickAnyBarber(option, () => 0.5)).toBe("marlon")
+    expect(pickAnyBarber(option, () => 0.999999)).toBe("roger")
+    expect(pickAnyBarber({ time: "09:00", barberIds: ["fabian"] }, () => 0.9)).toBe("fabian")
   })
 
-  it("only picks among barbers free at that time", () => {
-    expect(leastBooked({ time: "10:00", barberIds: ["fabian", "marlon"] }, day)).toBe("marlon")
-  })
-
-  it("keeps config order on a tie", () => {
-    const tie = mergeSlots([
-      { barberId: "a", slots: ["10:00"] },
-      { barberId: "b", slots: ["10:00"] },
-    ])
-    expect(leastBooked(tie[0], tie)).toBe("a")
+  it("spreads evenly instead of favouring one barber", () => {
+    // Sweep the random range uniformly: each barber must get exactly a quarter
+    const n = 400
+    const counts: Record<string, number> = {}
+    for (let i = 0; i < n; i++) {
+      const id = pickAnyBarber(option, () => (i + 0.5) / n)
+      counts[id] = (counts[id] ?? 0) + 1
+    }
+    expect(counts).toEqual({ fabian: 100, alexis: 100, marlon: 100, roger: 100 })
   })
 })
 

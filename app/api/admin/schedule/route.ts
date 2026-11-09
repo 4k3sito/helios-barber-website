@@ -19,8 +19,10 @@ export async function POST(req: Request) {
 
   if (dayOff) {
     await setOverride(barberId, date, { dayOff: true })
-  } else if (start && end) {
-    if (!/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end) || start >= end) {
+  } else if (start !== undefined || end !== undefined) {
+    // A half-filled or blank range is a mistake, not "back to regular hours": reject it
+    // instead of falling through to clearOverride and reporting success.
+    if (typeof start !== "string" || typeof end !== "string" || !/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end) || start >= end) {
       return NextResponse.json({ error: "Horario inválido" }, { status: 400 })
     }
     await setOverride(barberId, date, { start, end })

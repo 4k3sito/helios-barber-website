@@ -16,12 +16,11 @@ export function mergeSlots(perBarber: { barberId: string; slots: string[] }[]): 
 }
 
 /**
- * "Me da igual": the barber free at this time who has the most open slots that day,
- * so clients without a preference spread toward whoever is least booked.
+ * "Me da igual": a random barber among those free at this time. Uniform on purpose — ranking by
+ * open slots always favoured whoever works the longest hours, even on an empty day.
  */
-export function leastBooked(option: SlotOption, day: SlotOption[]): string {
-  const openSlots = (id: string) => day.filter((o) => o.barberIds.includes(id)).length
-  return option.barberIds.reduce((best, id) => (openSlots(id) > openSlots(best) ? id : best))
+export function pickAnyBarber(option: SlotOption, random: () => number = Math.random): string {
+  return option.barberIds[Math.floor(random() * option.barberIds.length)]
 }
 
 /** Calendar-day arithmetic on "YYYY-MM-DD" in UTC, so DST and the local clock never shift the day. */

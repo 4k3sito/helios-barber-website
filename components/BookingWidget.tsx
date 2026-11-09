@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { BARBERS, BARBERIA_SERVICES, type Barber, type Service } from "@/lib/config";
-import { addDays, leastBooked, mergeSlots, type SlotOption } from "@/lib/availability";
+import { addDays, mergeSlots, pickAnyBarber, type SlotOption } from "@/lib/availability";
 
 const BOOKABLE_BARBERS = BARBERS.filter((b) => b.bookable !== false);
 const barberById = (id: string) => BOOKABLE_BARBERS.find((b) => b.id === id)!;
@@ -315,7 +315,7 @@ export default function BookingWidget() {
                     );
                   })}
                   <button
-                    onClick={() => confirmSlot(pending.time, leastBooked(pending, options))}
+                    onClick={() => confirmSlot(pending.time, pickAnyBarber(pending))}
                     className="rounded-ctl border border-accent/60 p-3 font-mono text-xs uppercase tracking-[0.14em] text-accent transition-colors duration-200 hover:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent min-h-[44px] sm:col-span-2"
                   >
                     Me da igual

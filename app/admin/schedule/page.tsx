@@ -6,10 +6,12 @@ import { BARBERS } from "@/lib/config";
 
 type Override = { dayOff: true } | { start: string; end: string };
 type Overrides = Record<string, Record<string, Override>>;
-type RowState = { dayOff: boolean; start: string; end: string; saving: boolean; savedAt: number };
+type Draft = { dayOff: boolean; start: string; end: string };
+type Hours = { start: string; end: string };
 
 const DAYS_AHEAD = 28;
 const TIME_ZONE = "America/Mexico_City";
+const keyOf = (barberId: string, date: string) => `${barberId}|${date}`;
 
 // ponytail: reuse the CDMX-local "today" pattern from app/api/book/route.ts —
 // new Date().toISOString() reads UTC and silently skips "today" after 6pm CDMX.
@@ -32,72 +34,123 @@ function fmtDate(d: string) {
   });
 }
 
+/** What is stored for this day: the override if any, else the barber's regular hours. */
+function savedDraft(override: Override | undefined, hours: Hours): Draft {
+  if (override && "dayOff" in override) return { dayOff: true, ...hours };
+  return { dayOff: false, ...(override ?? hours) };
+}
+
+function sameDraft(a: Draft, b: Draft) {
+  return a.dayOff === b.dayOff && (a.dayOff || (a.start === b.start && a.end === b.end));
+}
+
 export default function AdminSchedulePage() {
   const router = useRouter();
   const dates = useMemo(() => dateRange(DAYS_AHEAD), []);
   const [barberId, setBarberId] = useState(BARBERS[0].id);
   const [overrides, setOverrides] = useState<Overrides>({});
   const [loading, setLoading] = useState(true);
-  const [rows, setRows] = useState<Record<string, RowState>>({});
+  const [loadError, setLoadError] = useState("");
+  // Unsaved edits live beside the saved overrides, keyed by barber+day, so saving one day or
+  // switching barber never resets another day's pending change (it used to: rows were rebuilt
+  // from the saved overrides after every save, silently unchecking an unsaved "Cerrado").
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [savedAt, setSavedAt] = useState<Record<string, number>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const barber = BARBERS.find((b) => b.id === barberId)!;
+  const savedFor = (bId: string, date: string) =>
+    savedDraft(overrides[bId]?.[date], BARBERS.find((b) => b.id === bId)!.hours);
+  const isDirty = (bId: string, date: string) => {
+    const draft = drafts[keyOf(bId, date)];
+    return !!draft && !sameDraft(draft, savedFor(bId, date));
+  };
+  const dirtyKeys = Object.keys(drafts).filter((k) => {
+    const [bId, date] = k.split("|");
+    return isDirty(bId, date);
+  });
+  const hasUnsaved = dirtyKeys.length > 0;
 
   useEffect(() => {
     fetch("/api/admin/schedule")
-      .then((r) => r.json())
-      .then((d) => setOverrides(d.overrides || {}))
+      .then(async (r) => {
+        if (!r.ok) throw new Error(r.status === 401 ? "Sesión expirada: vuelve a entrar." : `Error ${r.status}`);
+        const d = await r.json();
+        setOverrides(d.overrides || {});
+      })
+      .catch((e) => setLoadError(e instanceof Error ? e.message : "No se pudieron cargar los horarios."))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    const next: Record<string, RowState> = {};
-    for (const date of dates) {
-      const o = overrides[barberId]?.[date];
-      if (o && "dayOff" in o) {
-        next[date] = { dayOff: true, start: barber.hours.start, end: barber.hours.end, saving: false, savedAt: 0 };
-      } else if (o) {
-        next[date] = { dayOff: false, start: o.start, end: o.end, saving: false, savedAt: 0 };
-      } else {
-        next[date] = { dayOff: false, start: barber.hours.start, end: barber.hours.end, saving: false, savedAt: 0 };
-      }
-    }
-    setRows(next);
-  }, [barberId, overrides, dates, barber.hours.start, barber.hours.end]);
+    if (!hasUnsaved) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ""; // older WebViews / Samsung Internet only prompt with this set
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [hasUnsaved]);
 
-  function updateRow(date: string, patch: Partial<RowState>) {
-    setRows((r) => ({ ...r, [date]: { ...r[date], ...patch } }));
+  function updateRow(date: string, patch: Partial<Draft>) {
+    const key = keyOf(barberId, date);
+    setDrafts((d) => ({ ...d, [key]: { ...(d[key] ?? savedFor(barberId, date)), ...patch } }));
+    setSavedAt((s) => ({ ...s, [key]: 0 }));
+    setErrors((e) => ({ ...e, [key]: "" }));
   }
 
   async function save(date: string) {
-    const row = rows[date];
-    updateRow(date, { saving: true });
-    const isCustom = !row.dayOff && (row.start !== barber.hours.start || row.end !== barber.hours.end);
+    const bId = barberId;
+    const key = keyOf(bId, date);
+    const row = drafts[key] ?? savedFor(bId, date);
+    if (!row.dayOff && (!row.start || !row.end || row.start >= row.end)) {
+      setErrors((e) => ({ ...e, [key]: "No se guardó. Revisa el horario: la entrada debe ser antes de la salida." }));
+      return;
+    }
+    const hours = BARBERS.find((b) => b.id === bId)!.hours;
+    const isCustom = !row.dayOff && (row.start !== hours.start || row.end !== hours.end);
     const body = row.dayOff
-      ? { barberId, date, dayOff: true }
+      ? { barberId: bId, date, dayOff: true }
       : isCustom
-        ? { barberId, date, start: row.start, end: row.end }
-        : { barberId, date };
+        ? { barberId: bId, date, start: row.start, end: row.end }
+        : { barberId: bId, date };
 
-    const res = await fetch("/api/admin/schedule", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) {
+    setSaving((s) => ({ ...s, [key]: true }));
+    setErrors((e) => ({ ...e, [key]: "" }));
+    try {
+      const res = await fetch("/api/admin/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(res.status === 401 ? "Sesión expirada: vuelve a entrar y guarda de nuevo." : data.error ?? `Error ${res.status}`);
+      }
       setOverrides((all) => {
-        const forBarber = { ...all[barberId] };
+        const forBarber = { ...all[bId] };
         if (row.dayOff) forBarber[date] = { dayOff: true };
         else if (isCustom) forBarber[date] = { start: row.start, end: row.end };
         else delete forBarber[date];
-        return { ...all, [barberId]: forBarber };
+        return { ...all, [bId]: forBarber };
       });
-      updateRow(date, { saving: false, savedAt: Date.now() });
-    } else {
-      updateRow(date, { saving: false });
+      setDrafts((d) => {
+        if (d[key] !== drafts[key]) return d; // edited again while saving: keep the newer draft
+        const rest = { ...d };
+        delete rest[key];
+        return rest;
+      });
+      setSavedAt((s) => ({ ...s, [key]: Date.now() }));
+    } catch (e) {
+      // Keep the draft: the change is still pending, and the row says why it didn't stick
+      setErrors((er) => ({ ...er, [key]: `No se guardó. ${e instanceof Error ? e.message : ""}`.trim() }));
+    } finally {
+      setSaving((s) => ({ ...s, [key]: false }));
     }
   }
 
   async function logout() {
+    if (hasUnsaved && !window.confirm("Tienes cambios sin guardar. ¿Salir de todos modos?")) return;
     await fetch("/api/admin/login", { method: "DELETE" });
     router.push("/admin/login");
     router.refresh();
@@ -126,11 +179,26 @@ export default function AdminSchedulePage() {
             }`}
           >
             {b.name}
+            {dirtyKeys.some((k) => k.startsWith(`${b.id}|`)) && <span className="ml-1 text-accent" aria-label="cambios sin guardar">•</span>}
           </button>
         ))}
       </div>
 
-      {loading ? (
+      {hasUnsaved && (
+        <p role="status" className="mb-4 font-mono text-xs uppercase tracking-[0.12em] text-accent">
+          Tienes cambios sin guardar: pulsa “Guardar” en cada día marcado.
+        </p>
+      )}
+      {loadError && <p role="alert" className="mb-4 font-mono text-sm text-accent">{loadError}</p>}
+
+      {loadError ? (
+        <button
+          onClick={() => window.location.reload()}
+          className="rounded-ctl border border-accent px-5 py-3 font-mono text-xs uppercase tracking-[0.12em] text-accent"
+        >
+          Reintentar
+        </button>
+      ) : loading ? (
         <div className="grid gap-2" aria-hidden>
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="h-14 animate-pulse rounded-ctl bg-border/40" />
@@ -139,13 +207,14 @@ export default function AdminSchedulePage() {
       ) : (
         <div className="overflow-hidden rounded-card border border-border">
           {dates.map((date, i) => {
-            const row = rows[date];
-            if (!row) return null;
+            const key = keyOf(barberId, date);
+            const row = drafts[key] ?? savedFor(barberId, date);
+            const dirty = isDirty(barberId, date);
             const isOverridden = !!overrides[barberId]?.[date];
             return (
               <div
                 key={date}
-                className={`flex flex-wrap items-center gap-x-5 gap-y-3 p-4 ${i > 0 ? "border-t border-border" : ""}`}
+                className={`flex flex-wrap items-center gap-x-5 gap-y-3 p-4 ${i > 0 ? "border-t border-border" : ""} ${dirty ? "bg-accent/[0.06]" : ""}`}
               >
                 <div className="w-28 shrink-0 font-mono text-sm capitalize text-body">{fmtDate(date)}</div>
 
@@ -153,7 +222,8 @@ export default function AdminSchedulePage() {
                   <input
                     type="checkbox"
                     checked={row.dayOff}
-                    onChange={(e) => updateRow(date, { dayOff: e.target.checked, savedAt: 0 })}
+                    disabled={saving[key]}
+                    onChange={(e) => updateRow(date, { dayOff: e.target.checked })}
                     className="size-4 accent-accent"
                   />
                   Cerrado
@@ -163,31 +233,39 @@ export default function AdminSchedulePage() {
                   <input
                     type="time"
                     value={row.start}
-                    disabled={row.dayOff}
-                    onChange={(e) => updateRow(date, { start: e.target.value, savedAt: 0 })}
+                    disabled={row.dayOff || saving[key]}
+                    onChange={(e) => updateRow(date, { start: e.target.value })}
                     className="rounded-ctl border border-border bg-ink px-2 py-2 font-mono text-sm text-body [color-scheme:dark] focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
                   />
                   <span className="text-tertiary">–</span>
                   <input
                     type="time"
                     value={row.end}
-                    disabled={row.dayOff}
-                    onChange={(e) => updateRow(date, { end: e.target.value, savedAt: 0 })}
+                    disabled={row.dayOff || saving[key]}
+                    onChange={(e) => updateRow(date, { end: e.target.value })}
                     className="rounded-ctl border border-border bg-ink px-2 py-2 font-mono text-sm text-body [color-scheme:dark] focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
                   />
                 </div>
 
-                {isOverridden && (
+                {dirty ? (
+                  <span className="font-mono text-2xs uppercase tracking-[0.14em] text-accent">Sin guardar</span>
+                ) : isOverridden && (
                   <span className="font-mono text-2xs uppercase tracking-[0.14em] text-accent">Modificado</span>
                 )}
 
                 <button
                   onClick={() => save(date)}
-                  disabled={row.saving}
-                  className="ml-auto rounded-ctl border border-border px-4 py-2 font-mono text-xs uppercase tracking-[0.12em] transition-colors hover:border-cream disabled:opacity-50"
+                  // Nothing pending: a click would re-send the stored state, or clear an override
+                  disabled={saving[key] || !dirty}
+                  className={`ml-auto rounded-ctl border px-4 py-2 font-mono text-xs uppercase tracking-[0.12em] transition-colors disabled:opacity-50 ${
+                    dirty ? "border-accent bg-accent text-ink hover:opacity-82" : "border-border hover:border-cream"
+                  }`}
                 >
-                  {row.saving ? "Guardando…" : row.savedAt ? "Guardado" : "Guardar"}
+                  {saving[key] ? "Guardando…" : savedAt[key] && !dirty ? "Guardado" : "Guardar"}
                 </button>
+                {errors[key] && (
+                  <p role="alert" className="basis-full font-mono text-xs text-accent">{errors[key]}</p>
+                )}
               </div>
             );
           })}
