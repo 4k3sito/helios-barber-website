@@ -5,6 +5,7 @@ import Script from "next/script";
 import "./globals.css";
 
 const gaId = process.env.NEXT_PUBLIC_GA_ID;
+const gtmId = "GTM-MZCM4WKK";
 
 const mono = JetBrains_Mono({
   subsets: ["latin"],
@@ -39,13 +40,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-K9HK7DXN');`}
+})(window,document,'script','dataLayer','${gtmId}');`}
         </Script>
       </head>
       <body className="font-body text-body antialiased">
         <noscript>
           <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-K9HK7DXN"
+            src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
             height="0"
             width="0"
             style={{ display: "none", visibility: "hidden" }}
