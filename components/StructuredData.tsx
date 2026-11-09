@@ -2,7 +2,7 @@ import { BARBERS, BARBERIA_SERVICES, CONTACT } from "@/lib/config";
 
 const BASE = "https://heliosbarber.com";
 
-// schema.org BarberShop: lets Google tie the site to the Maps listing and show prices/hours.
+// schema.org has no BarberShop type — HairSalon (→ HealthAndBeautyBusiness → LocalBusiness) is the closest. Lets Google tie the site to the Maps listing and show prices/hours.
 // Keep address/phone identical to the Google Business Profile (NAP consistency).
 export default function StructuredData() {
   const opens = BARBERS.map((b) => b.hours.start).sort()[0];
@@ -10,7 +10,7 @@ export default function StructuredData() {
 
   const data = {
     "@context": "https://schema.org",
-    "@type": "BarberShop",
+    "@type": "HairSalon",
     "@id": `${BASE}/#barbershop`,
     name: "Helios Barbershop",
     url: BASE,
