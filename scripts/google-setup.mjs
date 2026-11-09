@@ -3,6 +3,8 @@
 //   node scripts/google-setup.mjs check            → qué APIs/permisos tiene la service account
 //   node scripts/google-setup.mjs gtm [G-XXXXXXX]  → crea etiquetas en GTM y publica
 //   node scripts/google-setup.mjs gsc              → verifica el dominio con GTM y crea la propiedad en Search Console
+//   node scripts/google-setup.mjs whatsapp         → evento GA4 contact_whatsapp en clics a wa.me y publica
+//   node scripts/google-setup.mjs sitemap          → envía /sitemap.xml a Search Console
 import { google } from "googleapis"
 import { readdirSync } from "node:fs"
 
@@ -219,6 +221,95 @@ async function gtm(measurementIdArg) {
   console.log(`✔ Publicada versión ${pub.containerVersion?.containerVersionId} de ${GTM_PUBLIC_ID}`)
 }
 
+async function getWorkspace() {
+  const container = await findContainer()
+  if (!container) throw new Error(`Sin acceso al contenedor ${GTM_PUBLIC_ID}`)
+  const { data: ws } = await tagmanager.accounts.containers.workspaces.list({ parent: container.path })
+  return ws.workspace[0].path
+}
+
+async function publish(parent, name) {
+  const { data: cv } = await tagmanager.accounts.containers.workspaces.create_version({
+    path: parent,
+    requestBody: { name, notes: "Creado por scripts/google-setup.mjs" },
+  })
+  if (cv.compilerError || !cv.containerVersion) throw new Error(`Error al compilar la versión: ${JSON.stringify(cv)}`)
+  const { data: pub } = await tagmanager.accounts.containers.versions.publish({ path: cv.containerVersion.path })
+  console.log(`✔ Publicada versión ${pub.containerVersion?.containerVersionId} de ${GTM_PUBLIC_ID}`)
+}
+
+// Clics a WhatsApp (wa.me) → evento GA4 "contact_whatsapp"
+async function whatsapp(measurementId = "G-PJJZG5G8HF") {
+  const parent = await getWorkspace()
+  const W = tagmanager.accounts.containers.workspaces
+
+  const { data: bi } = await W.built_in_variables.list({ parent })
+  const enabled = new Set((bi.builtInVariable ?? []).map((v) => v.type))
+  const missing = ["clickUrl", "clickText"].filter((t) => !enabled.has(t))
+  if (missing.length) {
+    await W.built_in_variables.create({ parent, type: missing })
+    console.log(`  + variables integradas: ${missing.join(", ")}`)
+  }
+
+  const [{ data: t }, { data: tg }] = await Promise.all([W.triggers.list({ parent }), W.tags.list({ parent })])
+  const trigger = await upsert(t.trigger ?? [], "Click - WhatsApp", () =>
+    W.triggers.create({
+      parent,
+      requestBody: {
+        name: "Click - WhatsApp",
+        type: "linkClick",
+        waitForTags: { type: "boolean", value: "false" },
+        checkValidation: { type: "boolean", value: "false" },
+        filter: [
+          {
+            type: "contains",
+            parameter: [
+              { type: "template", key: "arg0", value: "{{Click URL}}" },
+              { type: "template", key: "arg1", value: "wa.me" },
+            ],
+          },
+        ],
+      },
+    }),
+  )
+
+  const param = (name, value) => ({
+    type: "map",
+    map: [
+      { type: "template", key: "parameter", value: name },
+      { type: "template", key: "parameterValue", value },
+    ],
+  })
+  await upsert(tg.tag ?? [], "GA4 Event - contact_whatsapp", () =>
+    W.tags.create({
+      parent,
+      requestBody: {
+        name: "GA4 Event - contact_whatsapp",
+        type: "gaawe",
+        parameter: [
+          { type: "template", key: "eventName", value: "contact_whatsapp" },
+          { type: "template", key: "measurementIdOverride", value: measurementId },
+          {
+            type: "list",
+            key: "eventSettingsTable",
+            list: [param("link_url", "{{Click URL}}"), param("link_text", "{{Click Text}}")],
+          },
+        ],
+        firingTriggerId: [trigger.triggerId],
+      },
+    }),
+  )
+
+  await publish(parent, "WhatsApp clicks")
+}
+
+async function sitemap() {
+  const feedpath = `${SITE_URL}sitemap.xml`
+  await searchconsole.sitemaps.submit({ siteUrl: SITE_URL, feedpath })
+  const { data } = await searchconsole.sitemaps.get({ siteUrl: SITE_URL, feedpath })
+  console.log(`✔ Sitemap enviado: ${data.path} (pendiente: ${data.isPending ?? false}, errores: ${data.errors ?? 0})`)
+}
+
 async function gsc() {
   const site = { type: "SITE", identifier: SITE_URL }
   // TAG_MANAGER no usa token: Google revisa que el snippet GTM esté en el sitio y que
@@ -238,9 +329,9 @@ async function gsc() {
 }
 
 const [cmd, arg] = process.argv.slice(2)
-const run = { check, gtm: () => gtm(arg), gsc }[cmd]
+const run = { check, gtm: () => gtm(arg), gsc, whatsapp: () => whatsapp(arg), sitemap }[cmd]
 if (!run) {
-  console.log("Uso: node scripts/google-setup.mjs check | gtm [G-XXXXXXX] | gsc")
+  console.log("Uso: node scripts/google-setup.mjs check | gtm [G-XXXXXXX] | gsc | whatsapp [G-XXXXXXX] | sitemap")
   process.exit(1)
 }
 run().catch((e) => {
