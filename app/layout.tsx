@@ -21,7 +21,7 @@ const body = Lora({
 // "barbería" + colonia en el título: es lo que la gente busca ("barbería nápoles", "barbería cerca de mí").
 const title = "Barbería en Nápoles, CDMX · Helios Barbershop";
 const description =
-  "Barbería premium en Nápoles, Benito Juárez (a pasos del WTC). Corte de cabello, fade, diseño de barba y ceja desde $150 MXN. Agenda tu cita en línea en 1 minuto.";
+  "Barbería premium en Nápoles, Benito Juárez (a pasos del WTC). Corte, fade, diseño de barba y ceja desde $150 MXN. Agenda tu cita en línea en 1 minuto.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://heliosbarber.com"),

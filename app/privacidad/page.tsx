@@ -4,6 +4,8 @@ import { CONTACT } from "@/lib/config";
 export const metadata = {
   title: "Aviso de privacidad",
   alternates: { canonical: "/privacidad" },
+  description: "Cómo Helios Barbershop usa los datos que compartes al agendar tu cita (nombre, teléfono y correo) y cómo consultarlos, corregirlos o eliminarlos.",
+  robots: { index: false, follow: true },
 };
 
 export default function Privacidad() {

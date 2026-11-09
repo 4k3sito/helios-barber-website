@@ -3,6 +3,8 @@ import Link from "next/link";
 export const metadata = {
   title: "Términos de servicio",
   alternates: { canonical: "/terminos" },
+  description: "Condiciones para reservar en Helios Barbershop: apartado de horario, cancelaciones y cambios por WhatsApp, y precios en MXN con I.V.A. incluido.",
+  robots: { index: false, follow: true },
 };
 
 export default function Terminos() {
