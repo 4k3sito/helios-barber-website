@@ -58,7 +58,7 @@ async function findMeasurementIds() {
       const { data: s } = await analyticsadmin.properties.dataStreams.list({ parent: p.property })
       for (const st of s.dataStreams ?? []) {
         if (st.webStreamData)
-          out.push({ property: p.displayName, uri: st.webStreamData.defaultUri, id: st.webStreamData.measurementId })
+          out.push({ path: p.property, property: p.displayName, uri: st.webStreamData.defaultUri, id: st.webStreamData.measurementId })
       }
     }
   }
@@ -342,6 +342,42 @@ async function whatsapp(measurementId = GA4_ID) {
   await publish(parent, "WhatsApp clicks")
 }
 
+// Lee tráfico real de la propiedad GA4. Requiere la Analytics Data API habilitada en el
+// proyecto de la service account (la Admin API no sirve para leer eventos).
+async function ga4Traffic(property) {
+  const data = google.analyticsdata({ version: "v1beta", auth })
+  try {
+    const rt = await data.properties.runRealtimeReport({
+      property,
+      requestBody: { metrics: [{ name: "eventCount" }], dimensions: [{ name: "eventName" }] },
+    })
+    const rows = rt.data.rows ?? []
+    console.log(
+      rows.length
+        ? `✔ GA4 tiempo real (30 min): ${rows.map((r) => `${r.dimensionValues[0].value}×${r.metricValues[0].value}`).join(", ")}`
+        : "· GA4 tiempo real: 0 eventos en los últimos 30 min (abre el sitio y repite)",
+    )
+    const rep = await data.properties.runReport({
+      property,
+      requestBody: {
+        dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+        metrics: [{ name: "eventCount" }, { name: "totalUsers" }],
+        dimensions: [{ name: "eventName" }],
+        limit: 20,
+      },
+    })
+    const days = rep.data.rows ?? []
+    if (!days.length) console.log("· GA4 7 días: sin eventos todavía")
+    for (const r of days) {
+      console.log(`   ${r.dimensionValues[0].value}: ${r.metricValues[0].value} eventos, ${r.metricValues[1].value} usuarios`)
+    }
+  } catch (e) {
+    const help = e?.response?.data?.error?.details?.find((d) => d.metadata?.activationUrl)?.metadata?.activationUrl
+    console.log(`✘ Analytics Data API: ${errMsg(e)}`)
+    if (help) console.log(`   Habilítala y reintenta: ${help}`)
+  }
+}
+
 // Comprueba el flujo completo: contenedor publicado → gtm.js → sitio. Si algo apunta a otro
 // G-..., las visitas se guardan en otra propiedad y GA4 parece "vacío".
 async function verify() {
@@ -364,6 +400,15 @@ async function verify() {
     const r = await fetch(`${SITE_URL}${path}`)
     console.log(`${r.ok ? "✔" : "✘"} ${SITE_URL}${path} → HTTP ${r.status}`)
   }
+
+  const ids2 = await findMeasurementIds()
+  const stream = ids2.find((x) => x.id === GA4_ID)
+  if (!stream) {
+    console.log(`⚠ La service account no ve la propiedad de ${GA4_ID} (agrégala como Lector en GA4)`)
+    return
+  }
+  console.log(`✔ Propiedad ${stream.property} (${stream.path}) · stream ${stream.id}`)
+  await ga4Traffic(stream.path)
 }
 
 async function sitemap() {
