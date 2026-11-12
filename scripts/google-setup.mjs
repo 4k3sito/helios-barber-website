@@ -28,6 +28,7 @@ const auth = new google.auth.GoogleAuth({
     "https://www.googleapis.com/auth/tagmanager.publish",
     "https://www.googleapis.com/auth/tagmanager.readonly",
     "https://www.googleapis.com/auth/analytics.readonly",
+    "https://www.googleapis.com/auth/analytics.edit",
     "https://www.googleapis.com/auth/siteverification",
     "https://www.googleapis.com/auth/webmasters",
   ],
@@ -342,6 +343,24 @@ async function whatsapp(measurementId = GA4_ID) {
   await publish(parent, "WhatsApp clicks")
 }
 
+// Marca eventos como clave (= conversiones) en GA4. Requiere rol Editor en la propiedad;
+// con Lector la API responde 403 aunque el scope esté bien.
+async function keyEvents() {
+  const ids = await findMeasurementIds()
+  const stream = ids.find((x) => x.id === GA4_ID)
+  if (!stream) throw new Error(`La service account no ve la propiedad de ${GA4_ID}`)
+  const { data } = await analyticsadmin.properties.keyEvents.list({ parent: stream.path })
+  const have = new Set((data.keyEvents ?? []).map((k) => k.eventName))
+  for (const name of ["generate_lead", "contact_whatsapp"]) {
+    if (have.has(name)) {
+      console.log(`  = ya es evento clave: ${name}`)
+      continue
+    }
+    await analyticsadmin.properties.keyEvents.create({ parent: stream.path, requestBody: { eventName: name } })
+    console.log(`  + evento clave: ${name}`)
+  }
+}
+
 // Lee tráfico real de la propiedad GA4. Requiere la Analytics Data API habilitada en el
 // proyecto de la service account (la Admin API no sirve para leer eventos).
 async function ga4Traffic(property) {
@@ -437,9 +456,9 @@ async function gsc() {
 }
 
 const [cmd, arg] = process.argv.slice(2)
-const run = { check, gtm: () => gtm(arg), gsc, whatsapp: () => whatsapp(arg), sitemap, verify }[cmd]
+const run = { check, gtm: () => gtm(arg), gsc, whatsapp: () => whatsapp(arg), sitemap, verify, keyevents: keyEvents }[cmd]
 if (!run) {
-  console.log("Uso: node scripts/google-setup.mjs check | gtm [G-XXXXXXX] | gsc | whatsapp [G-XXXXXXX] | sitemap | verify")
+  console.log("Uso: node scripts/google-setup.mjs check | gtm [G-XXXXXXX] | gsc | whatsapp [G-XXXXXXX] | sitemap | keyevents | verify")
   process.exit(1)
 }
 run().catch((e) => {
