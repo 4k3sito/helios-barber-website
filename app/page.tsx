@@ -8,6 +8,7 @@ import GaleriaSection from "@/components/GaleriaSection";
 import BookingWidget from "@/components/BookingWidget";
 import FaqSection from "@/components/FaqSection";
 import Footer from "@/components/Footer";
+import WhatsAppFab from "@/components/WhatsAppFab";
 import Animations from "@/components/Animations";
 import StructuredData from "@/components/StructuredData";
 
@@ -32,6 +33,7 @@ export default function Home() {
       <BookingWidget />
       <FaqSection />
       <Footer />
+      <WhatsAppFab />
     </div>
   );
 }
