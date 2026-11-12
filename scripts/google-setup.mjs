@@ -5,14 +5,17 @@
 //   node scripts/google-setup.mjs gsc              → verifica el dominio con GTM y crea la propiedad en Search Console
 //   node scripts/google-setup.mjs whatsapp         → evento GA4 contact_whatsapp en clics a wa.me y publica
 //   node scripts/google-setup.mjs sitemap          → envía /sitemap.xml a Search Console
+//   node scripts/google-setup.mjs verify           → comprueba a qué GA4 apunta el contenedor publicado
 import { google } from "googleapis"
 import { readdirSync } from "node:fs"
 
+// La única propiedad GA4 del sitio. Todo (config + eventos) debe apuntar aquí:
+// si un tag lleva otro G-..., las visitas se registran en otra propiedad y "no hay datos".
+const GA4_ID = "G-H36Y1BDK2R"
 const GTM_PUBLIC_ID = "GTM-T76KNH8Z"
 const SITE_URL = "https://heliosbarber.com/"
-const SITE_HOST = "heliosbarber.com"
 const OWNER_EMAIL = process.env.OWNER_EMAIL || "akexanderr123@gmail.com"
-const ALL_PAGES_TRIGGER = "2147479553" // trigger integrado "All Pages" de GTM
+const INIT_TRIGGER = "2147479573" // trigger integrado "Initialization - All Pages" (el que usa GA4 por defecto)
 
 const keyFile = readdirSync(".").find((f) => /^heliosbarber-.*\.json$/.test(f))
 if (!keyFile) throw new Error("No encontré heliosbarber-*.json en la raíz del proyecto")
@@ -62,6 +65,19 @@ async function findMeasurementIds() {
   return out
 }
 
+async function liveDestinations() {
+  const container = await findContainer()
+  if (!container) throw new Error(`Sin acceso al contenedor ${GTM_PUBLIC_ID}`)
+  const { data } = await tagmanager.accounts.containers.versions.live({ parent: container.path })
+  const out = []
+  for (const t of data.tag ?? []) {
+    const p = Object.fromEntries((t.parameter ?? []).map((x) => [x.key, x.value]))
+    const dest = p.destinationId || p.tagId || p.measurementIdOverride || ""
+    if (dest) out.push({ name: t.name, type: t.type, dest })
+  }
+  return { version: data.name, tags: out }
+}
+
 async function check() {
   const sa = (await auth.getCredentials()).client_email
   console.log(`Service account: ${sa}\n`)
@@ -71,6 +87,17 @@ async function check() {
     console.log(c ? `✔ Tag Manager: acceso a ${GTM_PUBLIC_ID} (${c.path})` : `✘ Tag Manager: API OK, pero sin acceso a ${GTM_PUBLIC_ID}`)
   } catch (e) {
     console.log(`✘ Tag Manager: ${errMsg(e)}`)
+  }
+
+  try {
+    const live = await liveDestinations()
+    const dests = [...new Set(live.tags.map((t) => t.dest))]
+    const wrong = live.tags.filter((t) => t.dest !== GA4_ID)
+    console.log(`✔ GTM publicado "${live.version}" → ${dests.join(", ") || "(ningún destino)"}`)
+    if (dests.length > 1) console.log(`  ⚠ hay más de un destino: ${live.tags.map((t) => `${t.name}=${t.dest}`).join(", ")}`)
+    if (wrong.length) console.log(`  ⚠ tags que NO apuntan a ${GA4_ID}: ${wrong.map((t) => `${t.name}=${t.dest}`).join(", ")}`)
+  } catch (e) {
+    console.log(`✘ Versión publicada de GTM: ${errMsg(e)}`)
   }
 
   try {
@@ -108,13 +135,9 @@ async function upsert(list, name, create) {
 }
 
 async function gtm(measurementIdArg) {
-  let measurementId = measurementIdArg
-  if (!measurementId) {
-    const ids = (await findMeasurementIds()).filter((x) => (x.uri ?? "").includes(SITE_HOST) || /helios/i.test(x.property))
-    if (ids.length !== 1) throw new Error(`No pude elegir el ID de GA4 automáticamente (${ids.length} candidatos). Pásalo: gtm G-XXXXXXX`)
-    measurementId = ids[0].id
-  }
+  const measurementId = measurementIdArg || GA4_ID
   if (!/^G-[A-Z0-9]+$/.test(measurementId)) throw new Error(`ID de GA4 inválido: ${measurementId}`)
+  if (measurementId !== GA4_ID) console.log(`⚠ ${measurementId} no es el ID del sitio (${GA4_ID}); las visitas irían a otra propiedad`)
   console.log(`GA4: ${measurementId}`)
 
   const container = await findContainer()
@@ -169,17 +192,32 @@ async function gtm(measurementIdArg) {
     }),
   )
 
-  await upsert(tags, "Google tag - GA4", () =>
-    tagmanager.accounts.containers.workspaces.tags.create({
+  // Un solo tag de configuración por contenedor. Dos configs con el mismo destino duplican
+  // page_view cuando "ignore duplicate config" no está activo, y un config con otro G-...
+  // manda las visitas a otra propiedad (pasó: el contenedor publicaba G-PJJZG5G8HF).
+  const configTags = tags.filter((t) => t.type === "googtag" || t.type === "dest_ga")
+  const destOf = (t) => {
+    const p = Object.fromEntries((t.parameter ?? []).map((x) => [x.key, x.value]))
+    return p.destinationId || p.tagId || ""
+  }
+  if (configTags.some((t) => destOf(t) === measurementId)) {
+    console.log(`  = config GA4 ya existe para ${measurementId}`)
+  } else if (configTags.length) {
+    console.log(
+      `  ⚠ ya hay config GA4 con otro destino (${configTags.map((t) => `${t.name}=${destOf(t)}`).join(", ")}); no creo otra etiqueta, corrígela en ${GTM_PUBLIC_ID}`,
+    )
+  } else {
+    await tagmanager.accounts.containers.workspaces.tags.create({
       parent,
       requestBody: {
-        name: "Google tag - GA4",
+        name: `GA4 - Config ${measurementId}`,
         type: "googtag",
         parameter: [{ type: "template", key: "tagId", value: measurementId }],
-        firingTriggerId: [ALL_PAGES_TRIGGER],
+        firingTriggerId: [INIT_TRIGGER],
       },
-    }),
-  )
+    })
+    console.log(`  + creado: GA4 - Config ${measurementId}`)
+  }
 
   const param = (name, value) => ({
     type: "map",
@@ -239,7 +277,8 @@ async function publish(parent, name) {
 }
 
 // Clics a WhatsApp (wa.me) → evento GA4 "contact_whatsapp"
-async function whatsapp(measurementId = "G-PJJZG5G8HF") {
+async function whatsapp(measurementId = GA4_ID) {
+  if (measurementId !== GA4_ID) console.log(`⚠ ${measurementId} no es el ID del sitio (${GA4_ID}); las visitas irían a otra propiedad`)
   const parent = await getWorkspace()
   const W = tagmanager.accounts.containers.workspaces
 
@@ -303,6 +342,30 @@ async function whatsapp(measurementId = "G-PJJZG5G8HF") {
   await publish(parent, "WhatsApp clicks")
 }
 
+// Comprueba el flujo completo: contenedor publicado → gtm.js → sitio. Si algo apunta a otro
+// G-..., las visitas se guardan en otra propiedad y GA4 parece "vacío".
+async function verify() {
+  const live = await liveDestinations()
+  console.log(`GTM ${GTM_PUBLIC_ID} · versión publicada: ${live.version}`)
+  for (const t of live.tags) console.log(`  ${t.dest === GA4_ID ? "✔" : "✘"} ${t.name} → ${t.dest}`)
+  const wrong = live.tags.filter((t) => t.dest !== GA4_ID)
+  if (wrong.length) throw new Error(`Hay tags que no apuntan a ${GA4_ID}: ${wrong.map((t) => t.name).join(", ")}`)
+
+  const res = await fetch(`https://www.googletagmanager.com/gtm.js?id=${GTM_PUBLIC_ID}`)
+  const js = await res.text()
+  const ids = [...new Set(js.match(/G-[A-Z0-9]{8,}/g) ?? [])]
+  if (!ids.includes(GA4_ID)) throw new Error(`gtm.js no incluye ${GA4_ID} (encontrados: ${ids.join(", ") || "ninguno"})`)
+  console.log(`✔ gtm.js incluye ${GA4_ID}`)
+
+  const html = await (await fetch(SITE_URL)).text()
+  if (!html.includes(GTM_PUBLIC_ID)) throw new Error(`${SITE_URL} no carga ${GTM_PUBLIC_ID}`)
+  console.log(`✔ ${SITE_URL} carga ${GTM_PUBLIC_ID}`)
+  for (const path of ["robots.txt", "sitemap.xml"]) {
+    const r = await fetch(`${SITE_URL}${path}`)
+    console.log(`${r.ok ? "✔" : "✘"} ${SITE_URL}${path} → HTTP ${r.status}`)
+  }
+}
+
 async function sitemap() {
   const feedpath = `${SITE_URL}sitemap.xml`
   await searchconsole.sitemaps.submit({ siteUrl: SITE_URL, feedpath })
@@ -329,9 +392,9 @@ async function gsc() {
 }
 
 const [cmd, arg] = process.argv.slice(2)
-const run = { check, gtm: () => gtm(arg), gsc, whatsapp: () => whatsapp(arg), sitemap }[cmd]
+const run = { check, gtm: () => gtm(arg), gsc, whatsapp: () => whatsapp(arg), sitemap, verify }[cmd]
 if (!run) {
-  console.log("Uso: node scripts/google-setup.mjs check | gtm [G-XXXXXXX] | gsc | whatsapp [G-XXXXXXX] | sitemap")
+  console.log("Uso: node scripts/google-setup.mjs check | gtm [G-XXXXXXX] | gsc | whatsapp [G-XXXXXXX] | sitemap | verify")
   process.exit(1)
 }
 run().catch((e) => {

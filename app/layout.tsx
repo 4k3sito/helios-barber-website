@@ -3,7 +3,8 @@ import { JetBrains_Mono, Lora } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
-// GA4 (G-PJJZG5G8HF) se carga desde GTM con la etiqueta "Google tag - GA4"; no lo cargues aquí o se duplican visitas.
+// GA4 (G-H36Y1BDK2R, propiedad HeliosBarber 563304519) se carga desde GTM con la etiqueta
+// "GA4 - Config G-H36Y1BDK2R"; no lo cargues aquí o se duplican visitas.
 const gtmId = "GTM-T76KNH8Z";
 
 const mono = JetBrains_Mono({

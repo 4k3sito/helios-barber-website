@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify:analytics": "node scripts/google-setup.mjs verify"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
